@@ -281,6 +281,23 @@ export default function CartPage() {
           </div>
         </div>
       )}
+
+      {/* Mobile Sticky Cart Checkout Bar */}
+      {items.length > 0 && (
+        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Belanja</div>
+            <div className="text-base font-black text-blue-600">{formatRupiah(finalTotal)}</div>
+          </div>
+          <Link
+            href={`/checkout${appliedCoupon ? `?coupon=${appliedCoupon}` : ""}`}
+            className="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Checkout ({items.length})</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

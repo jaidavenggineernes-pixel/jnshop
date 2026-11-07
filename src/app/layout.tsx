@@ -5,6 +5,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CartDrawer } from "@/components/cart-drawer";
 import { AIChatAssistant } from "@/components/ai-chat-assistant";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -33,10 +34,11 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
         <Providers>
           <Navbar categories={categories} />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-16 sm:pb-0">{children}</main>
           <Footer />
           <CartDrawer />
           <AIChatAssistant />
+          <MobileBottomNav />
         </Providers>
       </body>
     </html>

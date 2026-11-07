@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
+import { MobileCatalogFilters } from "@/components/mobile-catalog-filters";
 import { Filter, SlidersHorizontal, Search, X } from "lucide-react";
 
 
@@ -139,6 +140,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           )}
         </div>
       </div>
+
+      {/* Mobile-Friendly Interactive Filter & Sort Controls */}
+      <MobileCatalogFilters
+        categories={categories}
+        totalProducts={products.length}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {/* Desktop Filter Sidebar */}
@@ -279,7 +286,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

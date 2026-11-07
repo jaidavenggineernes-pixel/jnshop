@@ -220,6 +220,36 @@ function CheckoutForm() {
         </p>
       </div>
 
+      {/* Visual Progress Stepper */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="grid grid-cols-4 gap-2 text-center text-xs">
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs">
+              ✓
+            </div>
+            <span className="font-semibold text-slate-700 text-[11px]">1. Keranjang</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs ring-4 ring-blue-100">
+              2
+            </div>
+            <span className="font-extrabold text-blue-600 text-[11px]">2. Pengiriman</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs ring-4 ring-blue-100">
+              3
+            </div>
+            <span className="font-extrabold text-blue-600 text-[11px]">3. Pembayaran</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 font-bold flex items-center justify-center text-xs">
+              4
+            </div>
+            <span className="font-medium text-slate-400 text-[11px]">4. Selesai</span>
+          </div>
+        </div>
+      </div>
+
       {errorMessage && (
         <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 shrink-0" />
@@ -681,6 +711,22 @@ function CheckoutForm() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Sticky Checkout Bar */}
+        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Tagihan</div>
+            <div className="text-base font-black text-blue-600">{formatRupiah(grandTotal)}</div>
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            {submitting ? "Memproses..." : "Bayar Sekarang"}
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </form>
     </div>

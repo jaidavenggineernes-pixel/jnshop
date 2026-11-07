@@ -189,6 +189,35 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* MOBILE QUICK CATEGORIES STRIP */}
+      <div className="lg:hidden px-4 -mt-10 relative z-20">
+        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 shadow-md">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-800 mb-2">
+            <span>Kategori Populer</span>
+            <Link href="/products" className="text-blue-600 font-semibold text-[11px]">
+              Lihat Semua →
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
+            <Link
+              href="/products"
+              className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 font-bold whitespace-nowrap shrink-0"
+            >
+              🔥 Semua Produk
+            </Link>
+            {categories.map((c) => (
+              <Link
+                key={c.id}
+                href={`/categories/${c.slug}`}
+                className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-700 font-medium whitespace-nowrap border border-slate-200/80 shrink-0 hover:bg-slate-100"
+              >
+                {c.name.split("&")[0].trim()}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* 2. CATEGORIES SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
@@ -295,7 +324,7 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -391,7 +420,7 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {latestProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

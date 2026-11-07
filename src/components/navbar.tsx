@@ -110,9 +110,18 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
                   placeholder="Cari produk fisik, digital, atau layanan..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100/80 border border-slate-200 text-slate-900 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-slate-400"
+                  className="w-full bg-slate-100/80 border border-slate-200 text-slate-900 text-sm rounded-xl pl-10 pr-9 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-slate-400"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </form>
 
@@ -255,9 +264,18 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
                   placeholder="Cari produk di JNshop..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100 border border-slate-200 text-slate-900 text-sm rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-slate-100 border border-slate-200 text-slate-900 text-sm rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </form>
           </div>

@@ -280,15 +280,15 @@ export function AIChatAssistant() {
 
   return (
     <>
-      {/* Floating Trigger Button */}
+      {/* Floating Trigger Button (Positioned safely above mobile bottom bar) */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-40">
+        <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
           <button
             onClick={() => setIsOpen(true)}
-            className="ai-floating-btn flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/35 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+            className="ai-floating-btn flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/35 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
           >
             <div className="relative">
-              <Sparkles className="w-5 h-5 text-amber-300 group-hover:rotate-12 transition-transform" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 group-hover:rotate-12 transition-transform" />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
             </div>
@@ -297,26 +297,30 @@ export function AIChatAssistant() {
         </div>
       )}
 
-      {/* Floating Chat Modal */}
+      {/* Responsive Chat Modal (Native Bottom Sheet on Mobile, Floating Card on Desktop) */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-96 md:w-[420px] h-[580px] max-h-[85vh] bg-white rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed inset-x-0 bottom-0 sm:bottom-6 sm:right-6 sm:inset-x-auto z-50 w-full sm:w-96 md:w-[420px] h-[92vh] sm:h-[580px] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
-          <div className="p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
-                <Bot className="w-5 h-5 text-amber-300" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 font-bold text-sm leading-tight">
-                  <span>JNshop AI Assistant</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-300"></span>
+          <div className="p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white flex flex-col shrink-0">
+            {/* Mobile Sheet Handle */}
+            <div className="w-10 h-1 bg-white/40 rounded-full mx-auto sm:hidden mb-2.5" />
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+                  <Bot className="w-5 h-5 text-amber-300" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-blue-100 mt-0.5">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                  <span>Real-time Active • Katalog & Gemini</span>
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-sm leading-tight">
+                    <span>JNshop AI Assistant</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-300"></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-blue-100 mt-0.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                    <span>Real-time Active • Katalog & Gemini</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
             <div className="flex items-center gap-1">
               <button
@@ -349,6 +353,7 @@ export function AIChatAssistant() {
               </button>
             </div>
           </div>
+        </div>
 
           {/* Quick Action Suggested Chips */}
           <div className="px-3 py-2 bg-slate-50 border-b border-slate-200/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs shrink-0">
