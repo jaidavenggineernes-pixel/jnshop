@@ -473,7 +473,7 @@ function CheckoutForm() {
                     </div>
                   </div>
                   {paymentMethod === "QRIS_INSTANT" && (
-                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
                   )}
                 </div>
 
@@ -482,13 +482,13 @@ function CheckoutForm() {
                   onClick={() => setPaymentMethod("BCA_MANUAL")}
                   className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                     paymentMethod === "BCA_MANUAL"
-                      ? "border-blue-600 bg-blue-50/60 shadow-sm"
+                      ? "border-stone-900 bg-stone-50 shadow-sm"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <Building className="w-5 h-5 text-indigo-600" />
+                      <Building className="w-5 h-5 text-stone-800" />
                     </div>
                     <div>
                       <div className="font-bold text-sm text-slate-900">Transfer Bank BCA</div>
@@ -498,7 +498,7 @@ function CheckoutForm() {
                     </div>
                   </div>
                   {paymentMethod === "BCA_MANUAL" && (
-                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
                   )}
                 </div>
 
@@ -507,13 +507,13 @@ function CheckoutForm() {
                   onClick={() => setPaymentMethod("MANDIRI_MANUAL")}
                   className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                     paymentMethod === "MANDIRI_MANUAL"
-                      ? "border-blue-600 bg-blue-50/60 shadow-sm"
+                      ? "border-stone-900 bg-stone-50 shadow-sm"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <Building className="w-5 h-5 text-amber-600" />
+                      <Building className="w-5 h-5 text-stone-800" />
                     </div>
                     <div>
                       <div className="font-bold text-sm text-slate-900">Transfer Bank Mandiri</div>
@@ -523,7 +523,7 @@ function CheckoutForm() {
                     </div>
                   </div>
                   {paymentMethod === "MANDIRI_MANUAL" && (
-                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
                   )}
                 </div>
 
@@ -532,13 +532,13 @@ function CheckoutForm() {
                   onClick={() => setPaymentMethod("BNI_VA")}
                   className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                     paymentMethod === "BNI_VA"
-                      ? "border-blue-600 bg-blue-50/60 shadow-sm"
+                      ? "border-stone-900 bg-stone-50 shadow-sm"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <CreditCard className="w-5 h-5 text-teal-600" />
+                      <CreditCard className="w-5 h-5 text-stone-800" />
                     </div>
                     <div>
                       <div className="font-bold text-sm text-slate-900">BNI Virtual Account</div>
@@ -546,7 +546,7 @@ function CheckoutForm() {
                     </div>
                   </div>
                   {paymentMethod === "BNI_VA" && (
-                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
                   )}
                 </div>
 
@@ -556,13 +556,13 @@ function CheckoutForm() {
                     onClick={() => setPaymentMethod("COD")}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                       paymentMethod === "COD"
-                        ? "border-blue-600 bg-blue-50/60 shadow-sm"
+                        ? "border-stone-900 bg-stone-50 shadow-sm"
                         : "border-slate-200 hover:border-slate-300"
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                        <Banknote className="w-5 h-5 text-emerald-600" />
+                        <Banknote className="w-5 h-5 text-stone-800" />
                       </div>
                       <div>
                         <div className="font-bold text-sm text-slate-900">Cash on Delivery (COD)</div>
@@ -572,7 +572,7 @@ function CheckoutForm() {
                       </div>
                     </div>
                     {paymentMethod === "COD" && (
-                      <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                      <CheckCircle2 className="w-5 h-5 text-stone-900" />
                     )}
                   </div>
                 )}
@@ -684,8 +684,8 @@ function CheckoutForm() {
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
-                <span className="font-extrabold text-sm text-slate-900">Total Pembayaran</span>
-                <span className="text-2xl font-black text-blue-600">
+                <span className="font-serif font-bold text-sm text-stone-900">Total Pembayaran</span>
+                <span className="text-2xl font-serif font-bold text-stone-900">
                   {formatRupiah(grandTotal)}
                 </span>
               </div>
@@ -693,7 +693,7 @@ function CheckoutForm() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-100 font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {submitting ? (
                   <span>Memproses Pesanan...</span>
@@ -705,8 +705,8 @@ function CheckoutForm() {
                 )}
               </button>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-stone-700" />
                 <span>Transaksi Terproteksi & Invoice Resmi Terverifikasi</span>
               </div>
             </div>
@@ -714,15 +714,15 @@ function CheckoutForm() {
         </div>
 
         {/* Mobile Sticky Checkout Bar */}
-        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-stone-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Tagihan</div>
-            <div className="text-base font-black text-blue-600">{formatRupiah(grandTotal)}</div>
+            <div className="text-[10px] text-stone-500 font-medium uppercase">Total Tagihan</div>
+            <div className="text-base font-serif font-bold text-stone-900">{formatRupiah(grandTotal)}</div>
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            className="py-2.5 px-4 bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-100 font-medium text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
           >
             {submitting ? "Memproses..." : "Bayar Sekarang"}
             <ArrowRight className="w-3.5 h-3.5" />

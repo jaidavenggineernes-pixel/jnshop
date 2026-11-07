@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Star, ShoppingBag, Heart, Check, Sparkles } from "lucide-react";
+import { Star, ShoppingBag, Heart, Check } from "lucide-react";
 import { ProductData } from "@/types";
 import { formatRupiah, calculateDiscountPercentage } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
@@ -16,6 +16,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const wishlisted = isWishlisted(product.id);
+  const [justAdded, setJustAdded] = useState(false);
 
   const primaryImage =
     product.images?.find((img: any) => img.isPrimary)?.url ||
@@ -31,6 +32,8 @@ export function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     if (!isOutOfStock) {
       addItem(product, product.variants?.[0], 1);
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1800);
     }
   };
 
@@ -41,30 +44,30 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400/60 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col overflow-hidden">
+    <div className="group relative bg-white rounded-2xl border border-stone-200/90 hover:border-stone-400/80 shadow-2xs hover:shadow-xl hover:shadow-stone-200/60 transition-all duration-300 flex flex-col overflow-hidden">
       {/* Top Media & Badges */}
-      <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
+      <div className="relative aspect-square w-full bg-stone-100 overflow-hidden">
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
           <img
             src={primaryImage}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500 ease-out"
             loading="lazy"
           />
         </Link>
 
         {/* Badges Overlay */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 pointer-events-none">
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10 pointer-events-none">
           {discountPercent > 0 && (
-            <span className="bg-red-500 text-white text-[11px] font-black px-2 py-0.5 rounded-lg shadow-sm">
-              -{discountPercent}%
+            <span className="bg-amber-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+              Hemat {discountPercent}%
             </span>
           )}
           <span
-            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg backdrop-blur-md shadow-sm ${
+            className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md backdrop-blur-md shadow-xs ${
               product.isPhysical
-                ? "bg-slate-900/80 text-white"
-                : "bg-blue-600/90 text-white"
+                ? "bg-stone-900/80 text-stone-100"
+                : "bg-blue-900/80 text-blue-100"
             }`}
           >
             {product.isPhysical ? "Fisik" : "Digital"}
@@ -74,10 +77,10 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Wishlist Button */}
         <button
           onClick={handleToggleWishlist}
-          className={`absolute top-2.5 right-2.5 p-2 rounded-xl backdrop-blur-md transition-all z-10 ${
+          className={`absolute top-2.5 right-2.5 p-2 rounded-xl backdrop-blur-md transition-all z-10 cursor-pointer ${
             wishlisted
-              ? "bg-red-50 text-red-500 shadow-md"
-              : "bg-white/80 text-slate-400 hover:text-red-500 hover:bg-white"
+              ? "bg-red-50 text-red-600 shadow-sm"
+              : "bg-white/80 text-stone-400 hover:text-red-500 hover:bg-white"
           }`}
           title={wishlisted ? "Hapus dari Favorit" : "Simpan ke Favorit"}
         >
@@ -86,8 +89,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Stock Out Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="bg-slate-950 text-white font-bold text-xs uppercase px-3 py-1.5 rounded-lg">
+          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="bg-stone-950 text-white font-bold text-xs uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-sm">
               Stok Habis
             </span>
           </div>
@@ -95,45 +98,36 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Body Information */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
           {/* Category & Rating */}
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-            <span className="font-medium hover:text-blue-600 transition-colors">
-              {product.category?.name || "JNshop Official"}
+          <div className="flex items-center justify-between text-[11px] text-stone-400 mb-1">
+            <span className="font-medium hover:text-stone-800 transition-colors uppercase tracking-wider text-[10px]">
+              {product.category?.name || "Koleksi Toko"}
             </span>
-            <div className="flex items-center gap-1 text-amber-500 font-semibold">
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
+            <div className="flex items-center gap-1 text-amber-600 font-semibold">
+              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
               <span>{product.rating?.toFixed(1) || "5.0"}</span>
-              <span className="text-slate-400 font-normal">({product.reviewCount || 0})</span>
             </div>
           </div>
 
           {/* Product Title */}
           <Link href={`/products/${product.slug}`} className="block">
-            <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
+            <h3 className="font-semibold text-stone-900 text-xs sm:text-sm leading-snug line-clamp-2 group-hover:text-stone-700 transition-colors">
               {product.name}
             </h3>
           </Link>
-
-          {/* Short Description or Variant info */}
-          {product.shortDescription && (
-            <p className="text-xs text-slate-500 line-clamp-1 mt-1 font-normal">
-              {product.shortDescription}
-            </p>
-          )}
         </div>
 
         {/* Price & Action Button */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-end justify-between gap-2">
+        <div className="mt-3 pt-3 border-t border-stone-100 flex items-end justify-between gap-2">
           <div>
-            <div className="text-xs text-slate-400">Harga</div>
             <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className="text-base font-extrabold text-slate-900">
+              <span className="text-sm sm:text-base font-extrabold text-stone-900">
                 {formatRupiah(effectivePrice)}
               </span>
               {discountPercent > 0 && (
-                <span className="text-xs text-slate-400 line-through">
+                <span className="text-[11px] text-stone-400 line-through">
                   {formatRupiah(product.price)}
                 </span>
               )}
@@ -144,14 +138,16 @@ export function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 ${
-              isOutOfStock
-                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white shadow-sm hover:shadow-md hover:shadow-blue-500/20 active:scale-95"
+            className={`p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+              justAdded
+                ? "bg-emerald-600 text-white"
+                : isOutOfStock
+                ? "bg-stone-100 text-stone-300 cursor-not-allowed"
+                : "bg-stone-900 text-white hover:bg-stone-800 shadow-xs active:scale-95"
             }`}
             title="Tambah ke Keranjang"
           >
-            <ShoppingBag className="w-4 h-4" />
+            {justAdded ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>

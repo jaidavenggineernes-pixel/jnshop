@@ -259,26 +259,43 @@ export default function CartPage() {
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
-                <span className="font-extrabold text-sm text-slate-900">Total Pembayaran</span>
-                <span className="text-2xl font-black text-blue-600">
+                <span className="font-serif font-bold text-sm text-stone-900">Total Pembayaran</span>
+                <span className="text-2xl font-serif font-bold text-stone-900">
                   {formatRupiah(finalTotal)}
                 </span>
               </div>
 
               <Link
                 href={`/checkout${appliedCoupon ? `?coupon=${appliedCoupon}` : ""}`}
-                className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span>Lanjut ke Formulir Checkout</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-stone-700" />
                 <span>Transaksi dijamin aman dengan invoice resmi</span>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Mobile Sticky Cart Total Bar */}
+      {items.length > 0 && (
+        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-stone-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] text-stone-500 font-medium uppercase">Total Pembayaran</div>
+            <div className="text-base font-serif font-bold text-stone-900">{formatRupiah(finalTotal)}</div>
+          </div>
+          <Link
+            href={`/checkout${appliedCoupon ? `?coupon=${appliedCoupon}` : ""}`}
+            className="py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Checkout</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       )}
 

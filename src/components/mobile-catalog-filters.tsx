@@ -7,10 +7,8 @@ import {
   ArrowUpDown,
   X,
   Check,
-  RotateCcw,
   SlidersHorizontal,
 } from "lucide-react";
-import { formatRupiah } from "@/lib/utils";
 
 interface CategoryItem {
   id: string;
@@ -84,38 +82,48 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
 
   return (
     <>
-      {/* Mobile Top Bar with Filter & Sort Pills */}
-      <div className="lg:hidden space-y-3 mb-6">
-        {/* Controls row */}
+      {/* Mobile Top Control Strip (Sticky under header) */}
+      <div className="lg:hidden mb-6 space-y-2.5">
         <div className="flex items-center gap-2">
-          {/* Open Filter Drawer Button */}
+          {/* Filter Trigger Button with badge */}
           <button
             type="button"
-            onClick={() => setIsFilterOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-white border border-slate-200/90 text-slate-800 text-xs font-bold shadow-2xs active:scale-95 transition-transform"
+            onClick={() => {
+              setSelectedCategory(currentCategory);
+              setSelectedType(currentType);
+              setSelectedSort(currentSort);
+              setMinPriceInput(currentMinPrice);
+              setMaxPriceInput(currentMaxPrice);
+              setIsFilterOpen(true);
+            }}
+            className={`flex-1 py-2.5 px-3.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+              activeFilterCount > 0
+                ? "bg-stone-900 border-stone-900 text-stone-100"
+                : "bg-white/95 border-stone-200 text-stone-800 hover:bg-stone-50"
+            }`}
           >
-            <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-            <span>Filter</span>
+            <Filter className="w-3.5 h-3.5" />
+            <span>Saring Produk</span>
             {activeFilterCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-amber-400 text-stone-900 text-[10px] font-mono font-bold flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
           </button>
 
-          {/* Sort Dropdown */}
-          <div className="flex-1 relative">
+          {/* Quick Sort Dropdown */}
+          <div className="relative flex-1">
             <select
               value={currentSort}
               onChange={(e) => applyFilters({ sort: e.target.value })}
-              className="w-full appearance-none py-2.5 pl-3 pr-8 rounded-2xl bg-white border border-slate-200/90 text-slate-800 text-xs font-bold shadow-2xs focus:outline-none"
+              className="w-full appearance-none py-2.5 pl-8 pr-7 bg-white/95 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900/10 cursor-pointer"
             >
-              <option value="newest">Terbaru</option>
+              <option value="newest">Rilisan Terbaru</option>
               <option value="price_asc">Harga Terendah</option>
               <option value="price_desc">Harga Tertinggi</option>
               <option value="rating">Rating Tertinggi</option>
             </select>
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-3 pointer-events-none" />
           </div>
         </div>
 
@@ -123,30 +131,30 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs pb-1">
           <button
             onClick={() => applyFilters({ category: "", type: "" })}
-            className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors ${
+            className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
               !currentCategory && !currentType
-                ? "bg-blue-600 text-white font-bold shadow-sm"
-                : "bg-white border border-slate-200 text-slate-700"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "bg-white/95 border border-stone-200 text-stone-700 hover:bg-stone-50"
             }`}
           >
             Semua ({totalProducts})
           </button>
           <button
             onClick={() => applyFilters({ type: currentType === "physical" ? "" : "physical" })}
-            className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors ${
+            className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
               currentType === "physical"
-                ? "bg-blue-600 text-white font-bold shadow-sm"
-                : "bg-white border border-slate-200 text-slate-700"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "bg-white/95 border border-stone-200 text-stone-700 hover:bg-stone-50"
             }`}
           >
             📦 Produk Fisik
           </button>
           <button
             onClick={() => applyFilters({ type: currentType === "digital" ? "" : "digital" })}
-            className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors ${
+            className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
               currentType === "digital"
-                ? "bg-blue-600 text-white font-bold shadow-sm"
-                : "bg-white border border-slate-200 text-slate-700"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "bg-white/95 border border-stone-200 text-stone-700 hover:bg-stone-50"
             }`}
           >
             ⚡ Produk Digital
@@ -155,10 +163,10 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
             <button
               key={c.id}
               onClick={() => applyFilters({ category: currentCategory === c.slug ? "" : c.slug })}
-              className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors ${
+              className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
                 currentCategory === c.slug
-                  ? "bg-blue-600 text-white font-bold shadow-sm"
-                  : "bg-white border border-slate-200 text-slate-700"
+                  ? "bg-stone-900 text-stone-100 shadow-sm"
+                  : "bg-white/95 border border-stone-200 text-stone-700 hover:bg-stone-50"
               }`}
             >
               {c.name.split("&")[0].trim()}
@@ -169,17 +177,17 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
 
       {/* Slide-Up Bottom Sheet Filter Modal for Mobile */}
       {isFilterOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200 border border-stone-200">
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-                <h3 className="font-bold text-sm text-slate-900">Filter & Kategori Produk</h3>
+                <SlidersHorizontal className="w-4 h-4 text-stone-800" />
+                <h3 className="font-serif font-bold text-sm text-stone-900">Saring Katalog Produk</h3>
               </div>
               <button
                 onClick={() => setIsFilterOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500"
+                className="p-1.5 rounded-xl hover:bg-stone-100 text-stone-500 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -189,17 +197,17 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
             <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
               {/* Format Filter */}
               <div>
-                <label className="font-bold uppercase tracking-wider text-slate-400 block mb-2.5">
+                <label className="font-medium text-stone-500 block mb-2">
                   Format Produk
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedType("")}
-                    className={`p-2.5 rounded-xl border text-center font-semibold transition-all ${
+                    className={`p-2.5 rounded-xl border text-center font-medium transition-all cursor-pointer ${
                       !selectedType
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                        ? "border-stone-900 bg-stone-900 text-stone-100"
+                        : "border-stone-200 text-stone-700 hover:bg-stone-50"
                     }`}
                   >
                     Semua
@@ -207,10 +215,10 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
                   <button
                     type="button"
                     onClick={() => setSelectedType("physical")}
-                    className={`p-2.5 rounded-xl border text-center font-semibold transition-all ${
+                    className={`p-2.5 rounded-xl border text-center font-medium transition-all cursor-pointer ${
                       selectedType === "physical"
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                        ? "border-stone-900 bg-stone-900 text-stone-100"
+                        : "border-stone-200 text-stone-700 hover:bg-stone-50"
                     }`}
                   >
                     📦 Fisik
@@ -218,10 +226,10 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
                   <button
                     type="button"
                     onClick={() => setSelectedType("digital")}
-                    className={`p-2.5 rounded-xl border text-center font-semibold transition-all ${
+                    className={`p-2.5 rounded-xl border text-center font-medium transition-all cursor-pointer ${
                       selectedType === "digital"
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                        ? "border-stone-900 bg-stone-900 text-stone-100"
+                        : "border-stone-200 text-stone-700 hover:bg-stone-50"
                     }`}
                   >
                     ⚡ Digital
@@ -231,21 +239,21 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
 
               {/* Category Filter */}
               <div>
-                <label className="font-bold uppercase tracking-wider text-slate-400 block mb-2.5">
+                <label className="font-medium text-stone-500 block mb-2">
                   Kategori
                 </label>
                 <div className="space-y-1.5">
                   <button
                     type="button"
                     onClick={() => setSelectedCategory("")}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border font-semibold transition-all ${
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border font-medium transition-all cursor-pointer ${
                       !selectedCategory
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                        ? "border-stone-900 bg-stone-900 text-stone-100"
+                        : "border-stone-200 text-stone-700 hover:bg-stone-50"
                     }`}
                   >
                     <span>Semua Kategori</span>
-                    {!selectedCategory && <Check className="w-4 h-4 text-blue-600" />}
+                    {!selectedCategory && <Check className="w-4 h-4 text-stone-100" />}
                   </button>
                   {categories.map((c) => {
                     const isSelected = selectedCategory === c.slug;
@@ -254,20 +262,20 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
                         key={c.id}
                         type="button"
                         onClick={() => setSelectedCategory(c.slug)}
-                        className={`w-full flex items-center justify-between p-2.5 rounded-xl border font-semibold transition-all ${
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl border font-medium transition-all cursor-pointer ${
                           isSelected
-                            ? "border-blue-600 bg-blue-50 text-blue-700"
-                            : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                            ? "border-stone-900 bg-stone-900 text-stone-100"
+                            : "border-stone-200 text-stone-700 hover:bg-stone-50"
                         }`}
                       >
                         <span className="truncate pr-2">{c.name}</span>
                         <div className="flex items-center gap-1.5">
                           {c._count && (
-                            <span className="text-[11px] text-slate-400">
+                            <span className={`text-[11px] ${isSelected ? "text-stone-300" : "text-stone-400"}`}>
                               ({c._count.products})
                             </span>
                           )}
-                          {isSelected && <Check className="w-4 h-4 text-blue-600" />}
+                          {isSelected && <Check className="w-4 h-4 text-stone-100" />}
                         </div>
                       </button>
                     );
@@ -277,28 +285,28 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
 
               {/* Price Range */}
               <div>
-                <label className="font-bold uppercase tracking-wider text-slate-400 block mb-2.5">
+                <label className="font-medium text-stone-500 block mb-2">
                   Rentang Harga (Rp)
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-1">Harga Minimum</span>
+                    <span className="text-[10px] text-stone-500 block mb-1">Harga Minimum</span>
                     <input
                       type="number"
                       placeholder="0"
                       value={minPriceInput}
                       onChange={(e) => setMinPriceInput(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-1">Harga Maksimum</span>
+                    <span className="text-[10px] text-stone-500 block mb-1">Harga Maksimum</span>
                     <input
                       type="number"
                       placeholder="Contoh: 500000"
                       value={maxPriceInput}
                       onChange={(e) => setMaxPriceInput(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
                     />
                   </div>
                 </div>
@@ -306,18 +314,18 @@ export function MobileCatalogFilters({ categories, totalProducts }: MobileCatalo
             </div>
 
             {/* Footer Buttons */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center gap-3">
+            <div className="p-4 border-t border-stone-100 bg-stone-50/70 flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleReset}
-                className="py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-white transition-colors"
+                className="py-2.5 px-4 rounded-xl border border-stone-200 text-stone-700 font-medium text-xs hover:bg-white transition-colors cursor-pointer"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={() => applyFilters()}
-                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-center shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs text-center shadow-sm transition-all cursor-pointer"
               >
                 Terapkan Filter
               </button>

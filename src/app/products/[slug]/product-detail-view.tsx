@@ -319,15 +319,15 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className={`py-3.5 px-4 rounded-2xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`py-3 px-4 rounded-xl border font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   justAdded
-                    ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                    : "border-blue-600 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                    ? "border-emerald-700 bg-emerald-50 text-emerald-800"
+                    : "border-stone-300 text-stone-800 hover:bg-stone-100 disabled:opacity-50"
                 }`}
               >
                 {justAdded ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-600" />
+                    <Check className="w-4 h-4 text-emerald-700" />
                     <span>Ditambahkan!</span>
                   </>
                 ) : (
@@ -341,7 +341,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               <button
                 onClick={handleBuyNow}
                 disabled={isOutOfStock}
-                className="py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/25 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="py-3 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs sm:text-sm shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Zap className="w-4 h-4" />
                 <span>Beli Sekarang</span>
@@ -352,20 +352,20 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               {/* Wishlist button */}
               <button
                 onClick={() => toggleWishlist(product.id)}
-                className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`flex-1 py-2 px-3 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                   wishlisted
-                    ? "border-red-200 bg-red-50 text-red-600"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    ? "border-amber-300 bg-amber-50 text-stone-900"
+                    : "border-stone-200 text-stone-600 hover:bg-stone-50"
                 }`}
               >
-                <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-stone-900 text-stone-900" : ""}`} />
                 <span>{wishlisted ? "Tersimpan di Favorit" : "Simpan ke Favorit"}</span>
               </button>
 
               {/* Share button */}
               <button
                 onClick={handleShare}
-                className="py-2.5 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="py-2 px-3 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 title="Bagikan Tautan Produk"
               >
                 <Share2 className="w-3.5 h-3.5" />
@@ -373,62 +373,62 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               </button>
             </div>
 
-            {/* Ask AI directly about this product */}
+            {/* Ask Concierge directly about this product */}
             <button
               type="button"
               onClick={handleAskAI}
-              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-violet-50 border border-indigo-200 hover:border-indigo-400 text-indigo-700 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:bg-indigo-100/60 cursor-pointer shadow-2xs group"
+              className="w-full py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200/90 text-stone-800 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs group"
             >
-              <Sparkles className="w-4 h-4 text-amber-500 group-hover:rotate-12 transition-transform" />
-              <span>Tanya JNshop AI tentang {product.name}</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-700 group-hover:rotate-12 transition-transform" />
+              <span>Konsultasi dengan JNshop Concierge</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Interactive Tabs for Description, Specifications, Shipping & Reviews */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <div className="bg-white/95 rounded-2xl border border-stone-200/90 shadow-sm overflow-hidden">
         {/* Tab Headers */}
-        <div className="flex items-center border-b border-slate-100 overflow-x-auto no-scrollbar bg-slate-50/50 p-2 gap-1.5">
+        <div className="flex items-center border-b border-stone-100 overflow-x-auto no-scrollbar bg-stone-50/60 p-2 gap-1.5">
           <button
             onClick={() => setActiveTab("desc")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "desc"
-                ? "bg-white text-blue-600 shadow-sm border border-slate-200/80"
-                : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
             }`}
           >
-            📋 Deskripsi Produk
+            Deskripsi Kurator
           </button>
           <button
             onClick={() => setActiveTab("specs")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "specs"
-                ? "bg-white text-blue-600 shadow-sm border border-slate-200/80"
-                : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
             }`}
           >
-            ⚙️ Spesifikasi Teknis
+            Spesifikasi & Fitur
           </button>
           <button
             onClick={() => setActiveTab("shipping")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "shipping"
-                ? "bg-white text-blue-600 shadow-sm border border-slate-200/80"
-                : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
             }`}
           >
-            🚚 Pengiriman & Garansi
+            Pengiriman & Garansi
           </button>
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "reviews"
-                ? "bg-white text-blue-600 shadow-sm border border-slate-200/80"
-                : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                ? "bg-stone-900 text-stone-100 shadow-sm"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
             }`}
           >
-            ⭐ Ulasan Pembeli ({product.reviews?.length || 0})
+            Ulasan Pembeli ({product.reviews?.length || 0})
           </button>
         </div>
 
@@ -588,10 +588,10 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
       )}
 
       {/* Mobile Sticky Bottom Purchase Bar (Visible on Mobile only) */}
-      <div className="fixed bottom-12 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-4 py-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+      <div className="fixed bottom-12 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200/90 px-4 py-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Harga</div>
-          <div className="text-base font-black text-blue-600 truncate leading-tight">
+          <div className="text-[10px] text-stone-500 uppercase font-medium">Total Harga</div>
+          <div className="text-base font-serif font-bold text-stone-900 truncate leading-tight">
             {formatRupiah(effectivePrice)}
           </div>
         </div>
@@ -601,10 +601,10 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
             type="button"
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+            className={`p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
               justAdded
-                ? "bg-emerald-600 border-emerald-600 text-white"
-                : "border-blue-600 text-blue-600 bg-blue-50/60"
+                ? "bg-emerald-700 border-emerald-700 text-white"
+                : "border-stone-300 text-stone-800 bg-stone-50"
             }`}
             title="Tambahkan ke Keranjang"
           >
@@ -615,7 +615,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
             type="button"
             onClick={handleBuyNow}
             disabled={isOutOfStock}
-            className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Zap className="w-3.5 h-3.5" />
             <span>Beli Sekarang</span>

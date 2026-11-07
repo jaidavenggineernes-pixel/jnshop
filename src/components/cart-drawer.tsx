@@ -38,18 +38,18 @@ export function CartDrawer() {
           className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between"
         >
           {/* Header */}
-          <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="p-4 sm:p-5 border-b border-stone-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-bold text-slate-900">
+              <ShoppingBag className="w-4 h-4 text-stone-800" />
+              <h2 className="text-base font-serif font-bold text-stone-900">
                 Keranjang Belanja ({items.reduce((a, b) => a + b.quantity, 0)})
               </h2>
             </div>
             <button
               onClick={() => setIsCartOpen(false)}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
@@ -158,9 +158,9 @@ export function CartDrawer() {
                   <span>Estimasi Pajak & Ongkir</span>
                   <span className="text-emerald-600 font-medium">Dihitung di checkout</span>
                 </div>
-                <div className="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-100">
+                <div className="flex justify-between text-base font-serif font-bold text-stone-900 pt-2 border-t border-stone-100">
                   <span>Total Sementara</span>
-                  <span className="text-blue-600">{formatRupiah(subtotal)}</span>
+                  <span>{formatRupiah(subtotal)}</span>
                 </div>
               </div>
 
@@ -168,17 +168,17 @@ export function CartDrawer() {
                 <Link
                   href="/cart"
                   onClick={() => setIsCartOpen(false)}
-                  className="py-3 px-4 rounded-xl border border-slate-200 text-slate-700 text-center font-semibold text-sm hover:bg-slate-50 transition-colors"
+                  className="py-2.5 px-3 rounded-xl border border-stone-200 text-stone-700 text-center font-medium text-xs hover:bg-stone-50 transition-colors"
                 >
-                  Lihat Keranjang
+                  Buka Keranjang
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={() => setIsCartOpen(false)}
-                  className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-center font-semibold text-sm flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all hover:gap-2"
+                  className="py-2.5 px-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 text-center font-medium text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all"
                 >
                   <span>Checkout</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>

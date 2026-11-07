@@ -3,8 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
 import { MobileCatalogFilters } from "@/components/mobile-catalog-filters";
-import { Filter, SlidersHorizontal, Search, X } from "lucide-react";
-
+import { Filter, Search, RotateCcw } from "lucide-react";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -88,32 +87,32 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* Header Breadcrumbs & Title */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-          <Link href="/" className="hover:text-blue-600 transition-colors">
+        <nav className="flex items-center gap-2 text-xs text-stone-500 mb-2">
+          <Link href="/" className="hover:text-stone-900 transition-colors">
             Beranda
           </Link>
           <span>/</span>
-          <span className="text-slate-800 font-medium">Katalog Produk</span>
+          <span className="text-stone-800 font-medium">Katalog Toko</span>
           {categorySlug && (
             <>
               <span>/</span>
-              <span className="text-blue-600 font-medium">
+              <span className="text-stone-900 font-medium">
                 {categories.find((c) => c.slug === categorySlug)?.name || categorySlug}
               </span>
             </>
           )}
-        </div>
+        </nav>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {q ? `Hasil Pencarian: "${q}"` : categorySlug ? categories.find((c) => c.slug === categorySlug)?.name : "Katalog Semua Produk"}
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight">
+              {q ? `Pencarian: "${q}"` : categorySlug ? categories.find((c) => c.slug === categorySlug)?.name : "Katalog Pilihan JNshop"}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Menampilkan {products.length} produk pilihan terbaik di JNshop
+            <p className="text-xs sm:text-sm text-stone-600 mt-1">
+              Menampilkan {products.length} kurasi produk fisik & digital siap pakai.
             </p>
           </div>
 
@@ -121,18 +120,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           {(q || categorySlug || typeFilter || isFeatured) && (
             <div className="flex flex-wrap items-center gap-2">
               {q && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-800 border border-stone-200">
                   Kata Kunci: {q}
                 </span>
               )}
               {typeFilter && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 uppercase">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200 uppercase">
                   Tipe: {typeFilter}
                 </span>
               )}
               <Link
                 href="/products"
-                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 underline underline-offset-2 ml-1"
+                className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 underline underline-offset-2 ml-1"
               >
                 Reset Filter
               </Link>
@@ -149,15 +148,15 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {/* Desktop Filter Sidebar */}
-        <aside className="hidden lg:block bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm space-y-6 sticky top-24">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <span className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <Filter className="w-4 h-4 text-blue-600" />
-              Filter Produk
+        <aside className="hidden lg:block bg-white/95 p-6 rounded-2xl border border-stone-200/90 shadow-sm space-y-6 sticky top-24">
+          <div className="flex items-center justify-between pb-3.5 border-b border-stone-100">
+            <span className="font-serif font-bold text-stone-900 text-sm flex items-center gap-2">
+              <Filter className="w-4 h-4 text-stone-700" />
+              Saring Produk
             </span>
             <Link
               href="/products"
-              className="text-xs text-slate-400 hover:text-blue-600 font-medium"
+              className="text-xs text-stone-500 hover:text-stone-900 transition-colors"
             >
               Reset
             </Link>
@@ -165,47 +164,47 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Type Filter */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3">
+            <label className="text-xs font-medium text-stone-500 block mb-2.5">
               Format Produk
             </label>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, type: "" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  !typeFilter ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  !typeFilter ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 Semua Format
               </Link>
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, type: "physical" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  typeFilter === "physical" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  typeFilter === "physical" ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 📦 Produk Fisik
               </Link>
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, type: "digital" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  typeFilter === "digital" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  typeFilter === "digital" ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
-                ⚡ Produk Digital & Jasa
+                ⚡ Produk Digital & Lisensi
               </Link>
             </div>
           </div>
 
           {/* Category Filter */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3">
+            <label className="text-xs font-medium text-stone-500 block mb-2.5">
               Kategori
             </label>
             <div className="space-y-1">
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, category: "" }).toString()}`}
-                className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors ${
-                  !categorySlug ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  !categorySlug ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 <span>Semua Kategori</span>
@@ -214,12 +213,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 <Link
                   key={c.id}
                   href={`/products?${new URLSearchParams({ ...resolvedParams, category: c.slug }).toString()}`}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors ${
-                    categorySlug === c.slug ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                    categorySlug === c.slug ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                   }`}
                 >
                   <span className="truncate pr-2">{c.name}</span>
-                  <span className="text-xs text-slate-400">({c._count.products})</span>
+                  <span className={`text-xs ${categorySlug === c.slug ? "text-stone-300" : "text-stone-400"}`}>
+                    ({c._count.products})
+                  </span>
                 </Link>
               ))}
             </div>
@@ -227,38 +228,38 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Sorting Filter */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3">
-              Urutkan Berdasarkan
+            <label className="text-xs font-medium text-stone-500 block mb-2.5">
+              Urutan
             </label>
             <div className="space-y-1">
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, sort: "newest" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  sort === "newest" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  sort === "newest" ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 Rilisan Terbaru
               </Link>
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, sort: "price_asc" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  sort === "price_asc" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  sort === "price_asc" ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 Harga Terendah
               </Link>
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, sort: "price_desc" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  sort === "price_desc" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  sort === "price_desc" ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 Harga Tertinggi
               </Link>
               <Link
                 href={`/products?${new URLSearchParams({ ...resolvedParams, sort: "rating" }).toString()}`}
-                className={`block px-3 py-2 rounded-xl text-sm transition-colors ${
-                  sort === "rating" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"
+                className={`block px-3 py-2 rounded-xl text-xs sm:text-sm transition-colors ${
+                  sort === "rating" ? "bg-stone-900 text-stone-100 font-medium" : "text-stone-700 hover:bg-stone-100/70"
                 }`}
               >
                 Rating Tertinggi
@@ -270,19 +271,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         {/* Product Grid Area */}
         <div className="lg:col-span-3 space-y-6">
           {products.length === 0 ? (
-            <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                <Search className="w-8 h-8" />
+            <div className="bg-white/95 rounded-2xl border border-stone-200/90 p-12 text-center space-y-4 shadow-sm">
+              <div className="w-14 h-14 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto border border-stone-200">
+                <Search className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Tidak ada produk ditemukan</h3>
-              <p className="text-sm text-slate-500 max-w-md mx-auto">
-                Coba sesuaikan kata kunci pencarian Anda atau reset filter untuk melihat seluruh koleksi produk.
+              <h3 className="text-base font-serif font-bold text-stone-900">Tidak ada produk ditemukan</h3>
+              <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
+                Sesuaikan kata kunci pencarian Anda atau reset filter untuk menjelajahi seluruh koleksi JNshop.
               </p>
               <Link
                 href="/products"
-                className="inline-block px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                className="inline-block px-5 py-2.5 rounded-xl bg-stone-900 text-stone-100 font-medium text-xs sm:text-sm hover:bg-stone-800 transition-colors shadow-sm"
               >
-                Tampilkan Semua Produk
+                Tampilkan Semua Koleksi
               </Link>
             </div>
           ) : (

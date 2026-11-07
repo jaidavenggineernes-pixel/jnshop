@@ -16,6 +16,7 @@ import {
   LogOut,
   PackageCheck,
   LayoutDashboard,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
@@ -40,61 +41,70 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
 
   return (
     <>
-      {/* Top Notification Announcement Bar */}
-      <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+      {/* Top Editorial Announcement Bar */}
+      <div className="bg-[#1c1917] text-stone-300 text-xs py-2 px-4 border-b border-stone-850">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <p className="flex items-center justify-center gap-1.5 font-medium">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 inline" />
+          <p className="flex items-center justify-center gap-1.5 font-medium tracking-wide text-[11px] sm:text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
             <span>
-              Selamat Datang di <strong>JNshop</strong> — Toko Online Pribadi & Produk Digital Resmi. Diskon 15% kode: <strong>JNSHOPNEW</strong>
+              Koleksi Alat Kerja & Solusi Digital Terkurasi • Pengiriman dari Jakarta • Voucher 15%: <strong className="text-amber-300 tracking-wider font-mono">JNSHOPNEW</strong>
             </span>
           </p>
-          <div className="flex items-center gap-4 text-slate-400 text-xs">
-            <Link href="/help" className="hover:text-white transition-colors">
+          <div className="flex items-center gap-4 text-stone-400 text-xs">
+            <Link href="/help" className="hover:text-stone-200 transition-colors">
               Pusat Bantuan
             </Link>
-            <span className="text-slate-700">|</span>
-            <Link href="/orders/track" className="hover:text-white transition-colors">
+            <span className="text-stone-700">|</span>
+            <Link href="/orders/track" className="hover:text-stone-200 transition-colors">
               Lacak Pesanan
             </Link>
+            <span className="text-stone-700">|</span>
+            <a
+              href="https://wa.me/6281234567890"
+              target="_blank"
+              rel="noreferrer"
+              className="text-stone-300 hover:text-emerald-400 transition-colors flex items-center gap-1"
+            >
+              <MessageCircle className="w-3 h-3 text-emerald-400" />
+              <span>WhatsApp</span>
+            </a>
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all">
+      <header className="sticky top-0 z-40 bg-[#faf9f6]/95 backdrop-blur-md border-b border-stone-200/90 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-18 gap-4">
-            
             {/* Brand Logo */}
             <div className="flex items-center gap-6">
-              <Link href="/" className="flex items-center gap-2.5 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <Link href="/" className="flex items-center gap-3 group">
+                <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#faf9f6] flex items-center justify-center font-bold text-lg shadow-sm border border-stone-800 group-hover:scale-102 transition-transform">
                   JN
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-extrabold text-xl tracking-tight text-slate-900 flex items-center gap-1">
-                    JN<span className="text-blue-600">shop</span>
+                  <span className="font-extrabold text-xl tracking-tight text-[#1c1917]">
+                    JN<span className="text-stone-500 font-normal">shop</span>
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
-                    Official Store
+                  <span className="text-[9px] uppercase tracking-widest font-semibold text-stone-400">
+                    Boutique & Atelier
                   </span>
                 </div>
               </Link>
 
-              {/* Desktop Categories Link */}
-              <div className="hidden lg:flex items-center gap-1 text-sm font-medium text-slate-600">
+              {/* Desktop Categories Links */}
+              <div className="hidden lg:flex items-center gap-1 text-sm font-medium text-stone-600">
                 <Link
                   href="/products"
-                  className="px-3 py-2 rounded-lg hover:text-blue-600 hover:bg-slate-50 transition-colors"
+                  className="px-3 py-2 rounded-xl hover:text-stone-900 hover:bg-stone-100 transition-colors"
                 >
-                  Semua Produk
+                  Semua Koleksi
                 </Link>
                 {categories.slice(0, 4).map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/categories/${cat.slug}`}
-                    className="px-3 py-2 rounded-lg hover:text-blue-600 hover:bg-slate-50 transition-colors"
+                    className="px-3 py-2 rounded-xl hover:text-stone-900 hover:bg-stone-100 transition-colors"
                   >
                     {cat.name.split("&")[0].trim()}
                   </Link>
@@ -102,22 +112,22 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
               </div>
             </div>
 
-            {/* Search Bar */}
+            {/* Human Search Bar */}
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
               <div className="relative w-full">
                 <input
                   type="text"
-                  placeholder="Cari produk fisik, digital, atau layanan..."
+                  placeholder="Cari keyboard, stand laptop, lisensi digital..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100/80 border border-slate-200 text-slate-900 text-sm rounded-xl pl-10 pr-9 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-slate-400"
+                  className="w-full bg-stone-100/90 border border-stone-200/80 text-stone-900 text-sm rounded-full pl-10 pr-9 py-2.5 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:bg-white transition-all placeholder:text-stone-400 placeholder:text-xs"
                 />
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-3 text-stone-400 hover:text-stone-600 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -126,16 +136,16 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
             </form>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
               {/* Wishlist Button */}
               <Link
                 href="/account/wishlist"
-                className="relative p-2.5 rounded-xl text-slate-600 hover:text-red-500 hover:bg-slate-100 transition-colors"
+                className="relative p-2.5 rounded-xl text-stone-600 hover:text-red-500 hover:bg-stone-100 transition-colors"
                 title="Favorit Saya"
               >
                 <Heart className="w-5 h-5" />
                 {wishlistIds.length > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {wishlistIds.length}
                   </span>
                 )}
@@ -144,12 +154,12 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
               {/* Cart Drawer Trigger */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2.5 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="relative p-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
                 title="Keranjang Belanja"
               >
                 <ShoppingBag className="w-5 h-5" />
                 {itemCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-blue-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-scale-in">
+                  <span className="absolute top-1 right-1 bg-[#1c1917] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
@@ -160,25 +170,25 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
                 <div className="relative">
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all text-sm font-medium text-slate-700"
+                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl hover:bg-stone-100 border border-transparent hover:border-stone-200 transition-all text-sm font-medium text-stone-700 cursor-pointer"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs">
+                    <div className="w-7 h-7 rounded-lg bg-stone-200 text-stone-800 font-bold flex items-center justify-center text-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <span className="hidden sm:inline max-w-[120px] truncate">{user.name}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
                   </button>
 
                   {userDropdownOpen && (
                     <div
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 text-sm animate-fade-in"
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-stone-100 py-2 z-50 text-sm animate-fade-in"
                       onMouseLeave={() => setUserDropdownOpen(false)}
                     >
-                      <div className="px-4 py-2 border-b border-slate-100">
-                        <p className="font-semibold text-slate-900 truncate">{user.name}</p>
-                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      <div className="px-4 py-2 border-b border-stone-100">
+                        <p className="font-semibold text-stone-900 truncate">{user.name}</p>
+                        <p className="text-xs text-stone-500 truncate">{user.email}</p>
                         {user.role === "ADMIN" && (
-                          <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-100 text-purple-700">
+                          <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-stone-100 text-stone-800">
                             Pemilik Toko / Admin
                           </span>
                         )}
@@ -188,39 +198,39 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
                         <Link
                           href="/admin"
                           onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-purple-700 hover:bg-purple-50 font-medium"
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-stone-900 hover:bg-stone-50 font-medium"
                         >
-                          <LayoutDashboard className="w-4 h-4" />
-                          Dashboard Admin
+                          <LayoutDashboard className="w-4 h-4 text-stone-500" />
+                          Dashboard Pengelola
                         </Link>
                       )}
 
                       <Link
                         href="/account/orders"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-slate-700 hover:bg-slate-50"
+                        className="flex items-center gap-2.5 px-4 py-2 text-stone-700 hover:bg-stone-50"
                       >
-                        <PackageCheck className="w-4 h-4 text-slate-400" />
+                        <PackageCheck className="w-4 h-4 text-stone-400" />
                         Pesanan Saya
                       </Link>
 
                       <Link
                         href="/account"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-slate-700 hover:bg-slate-50"
+                        className="flex items-center gap-2.5 px-4 py-2 text-stone-700 hover:bg-stone-50"
                       >
-                        <UserIcon className="w-4 h-4 text-slate-400" />
+                        <UserIcon className="w-4 h-4 text-stone-400" />
                         Profil Akun
                       </Link>
 
-                      <div className="border-t border-slate-100 my-1" />
+                      <div className="border-t border-stone-100 my-1" />
 
                       <button
                         onClick={() => {
                           setUserDropdownOpen(false);
                           logout();
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-red-600 hover:bg-red-50 text-left font-medium"
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-red-600 hover:bg-red-50 text-left font-medium cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         Keluar
@@ -229,16 +239,16 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <Link
                     href="/login"
-                    className="px-3.5 py-2 text-sm font-semibold text-slate-700 hover:text-blue-600 rounded-xl hover:bg-slate-100 transition-colors"
+                    className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-stone-700 hover:text-stone-900 rounded-xl hover:bg-stone-100 transition-colors"
                   >
                     Masuk
                   </Link>
                   <Link
                     href="/register"
-                    className="hidden sm:inline-flex px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all"
+                    className="hidden sm:inline-flex px-4 py-2 text-xs sm:text-sm font-semibold text-[#faf9f6] bg-[#1c1917] hover:bg-stone-800 rounded-xl shadow-xs transition-all"
                   >
                     Daftar
                   </Link>
@@ -248,9 +258,9 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
               {/* Mobile menu button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl"
+                className="lg:hidden p-2 text-stone-600 hover:bg-stone-100 rounded-xl cursor-pointer"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
@@ -261,17 +271,17 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Cari produk di JNshop..."
+                  placeholder="Cari perlengkapan meja kerja, software..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100 border border-slate-200 text-slate-900 text-sm rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-stone-100 border border-stone-200 text-stone-900 text-xs rounded-full pl-9 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:bg-white"
                 />
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2.5 top-3 text-stone-400 hover:text-stone-600"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -283,46 +293,46 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3">
-            <div className="font-semibold text-xs text-slate-400 uppercase tracking-wider">
-              Kategori Produk
+          <div className="lg:hidden border-t border-stone-200 bg-[#faf9f6] px-4 pt-4 pb-6 space-y-4">
+            <div className="font-bold text-[10px] text-stone-400 uppercase tracking-widest">
+              Koleksi & Kategori Toko
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <Link
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-slate-50 text-sm font-medium text-slate-800 hover:bg-blue-50 hover:text-blue-600"
+                className="p-3 rounded-xl bg-white border border-stone-200 text-stone-800 font-semibold hover:border-stone-400"
               >
-                Semua Produk
+                Semua Koleksi
               </Link>
               {categories.map((c) => (
                 <Link
                   key={c.id}
                   href={`/categories/${c.slug}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2.5 rounded-xl bg-slate-50 text-sm font-medium text-slate-800 hover:bg-blue-50 hover:text-blue-600 truncate"
+                  className="p-3 rounded-xl bg-white border border-stone-200 text-stone-800 font-semibold hover:border-stone-400 truncate"
                 >
                   {c.name}
                 </Link>
               ))}
             </div>
 
-            <div className="border-t border-slate-100 pt-3 flex flex-col gap-2">
+            <div className="border-t border-stone-200/80 pt-3 flex flex-col gap-2 text-xs">
               <Link
                 href="/orders/track"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 text-sm text-slate-700 py-1.5"
+                className="flex items-center gap-2 text-stone-700 py-1.5 font-medium"
               >
-                <PackageCheck className="w-4 h-4 text-blue-600" />
-                Lacak Status Pesanan
+                <PackageCheck className="w-4 h-4 text-stone-500" />
+                Lacak Pengiriman Pesanan
               </Link>
               <Link
                 href="/help"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 text-sm text-slate-700 py-1.5"
+                className="flex items-center gap-2 text-stone-700 py-1.5 font-medium"
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                Pusat Bantuan & Garansi
+                <ShieldCheck className="w-4 h-4 text-stone-500" />
+                Garansi Retur 7 Hari & FAQ
               </Link>
             </div>
           </div>

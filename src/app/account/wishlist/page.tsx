@@ -38,45 +38,53 @@ export default function WishlistPage() {
   }, [wishlistIds]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       <div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-          <Link href="/" className="hover:text-blue-600">
+        <nav className="flex items-center gap-2 text-xs text-stone-500 mb-2">
+          <Link href="/" className="hover:text-stone-900 transition-colors">
             Beranda
           </Link>
           <span>/</span>
-          <Link href="/account" className="hover:text-blue-600">
+          <Link href="/account" className="hover:text-stone-900 transition-colors">
             Akun
           </Link>
           <span>/</span>
-          <span className="text-slate-800 font-medium">Favorit</span>
+          <span className="text-stone-800 font-medium">Favorit</span>
+        </nav>
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight">
+            Koleksi Disimpan ({wishlistIds.length})
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-600">
+            Daftar kurasi produk yang ingin Anda pertimbangkan atau beli nanti.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Produk Favorit / Wishlist ({wishlistIds.length})
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Daftar produk impian yang Anda simpan untuk dibeli nanti.
-        </p>
       </div>
 
       {loading ? (
-        <div className="py-20 text-center text-sm text-slate-400">Memuat produk favorit...</div>
+        <div className="py-20 text-center text-xs sm:text-sm text-stone-500 font-serif">
+          Menyiapkan koleksi simpanan Anda...
+        </div>
       ) : products.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center space-y-4 max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto">
-            <Heart className="w-8 h-8" />
+        <div className="bg-white/95 rounded-2xl border border-stone-200/90 p-12 sm:p-16 text-center space-y-4 max-w-lg mx-auto shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center mx-auto border border-stone-200">
+            <Heart className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Belum Ada Produk Favorit</h2>
-          <p className="text-sm text-slate-500">
-            Simpan produk yang Anda sukai dengan menekan ikon hati pada katalog produk.
+          <h2 className="text-lg font-serif font-bold text-stone-900">
+            Belum Ada Item Disimpan
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+            Klik tanda hati pada kartu produk manapun untuk menyimpannya ke dalam daftar pertimbangan pribadi Anda.
           </p>
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm shadow-md"
-          >
-            <span>Jelajahi Produk</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="pt-2">
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-stone-100 font-medium text-xs sm:text-sm shadow-sm hover:bg-stone-800 transition-colors"
+            >
+              <span>Jelajahi Katalog Toko</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -87,43 +95,47 @@ export default function WishlistPage() {
             return (
               <div
                 key={p.id}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between"
+                className="bg-white/95 rounded-2xl border border-stone-200/90 shadow-sm overflow-hidden flex flex-col justify-between hover:border-stone-400/80 transition-all group"
               >
                 <div>
-                  <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
-                    <img src={primaryImg} alt="" className="w-full h-full object-cover" />
+                  <div className="relative aspect-square w-full bg-stone-100 overflow-hidden">
+                    <img
+                      src={primaryImg}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
+                    />
                     <button
                       onClick={() => toggleWishlist(p.id)}
-                      className="absolute top-2.5 right-2.5 p-2 rounded-xl bg-white/90 text-red-500 shadow-sm hover:scale-105"
+                      className="absolute top-2.5 right-2.5 p-2 rounded-xl bg-white/95 text-stone-400 hover:text-red-600 shadow-sm transition-colors border border-stone-200/80"
                       title="Hapus dari Favorit"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  <div className="p-4 space-y-1.5">
-                    <span className="text-[11px] font-semibold text-blue-600 uppercase">
+                  <div className="p-3.5 sm:p-4 space-y-1.5">
+                    <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
                       {p.category?.name}
                     </span>
                     <Link
                       href={`/products/${p.slug}`}
-                      className="font-bold text-sm text-slate-900 hover:text-blue-600 line-clamp-2 block"
+                      className="font-serif font-bold text-xs sm:text-sm text-stone-900 hover:text-amber-800 line-clamp-2 leading-snug block transition-colors"
                     >
                       {p.name}
                     </Link>
-                    <div className="text-base font-extrabold text-slate-900 pt-1">
+                    <div className="text-sm sm:text-base font-serif font-bold text-stone-900 pt-1">
                       {formatRupiah(price)}
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 pt-0">
+                <div className="p-3.5 sm:p-4 pt-0">
                   <button
                     onClick={() => addItem(p, p.variants?.[0], 1)}
-                    className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
-                    <span>Pindahkan ke Keranjang</span>
+                    <span>Ke Keranjang</span>
                   </button>
                 </div>
               </div>

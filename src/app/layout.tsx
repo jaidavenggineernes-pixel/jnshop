@@ -31,7 +31,7 @@ export default async function RootLayout({
 
   return (
     <html lang="id" className="h-full antialiased scroll-smooth">
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#faf9f6] text-stone-900 font-sans selection:bg-stone-900 selection:text-amber-100">
         <Providers>
           <Navbar categories={categories} />
           <main className="flex-1 pb-16 sm:pb-0">{children}</main>

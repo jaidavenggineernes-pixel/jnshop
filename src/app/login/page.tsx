@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, ArrowRight, Lock, Mail, AlertCircle, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, Mail, AlertCircle, Sparkles, UserCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
@@ -49,7 +49,7 @@ export default function LoginPage() {
         router.push("/account");
       }
     } else {
-      setError(res.error || "Demo login failed");
+      setError(res.error || "Gagal masuk ke akun demo");
     }
   };
 
@@ -59,32 +59,37 @@ export default function LoginPage() {
         
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+          <Link href="/" className="inline-flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-stone-900 border border-stone-800 flex items-center justify-center text-amber-200 font-serif font-bold text-base shadow-sm">
               JN
             </div>
-            <span className="font-extrabold text-2xl tracking-tight text-slate-900">
-              JN<span className="text-blue-600">shop</span>
-            </span>
+            <div className="text-left">
+              <span className="font-serif font-bold text-xl tracking-tight text-stone-900 block leading-tight">
+                JNshop
+              </span>
+              <span className="text-[9px] tracking-widest uppercase font-medium text-amber-800 block">
+                Boutique & Atelier
+              </span>
+            </div>
           </Link>
-          <h1 className="text-2xl font-black text-slate-900">Masuk ke Akun Anda</h1>
-          <p className="text-xs text-slate-500">
-            Akses pesanan, riwayat pembelian produk digital, dan kelola profil Anda.
+          <h1 className="text-2xl font-serif font-bold text-stone-900 pt-2">Masuk ke Akun Anda</h1>
+          <p className="text-xs text-stone-600">
+            Akses pesanan, riwayat lisensi produk digital, dan preferensi akun Anda.
           </p>
         </div>
 
         {error && (
-          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
             <span>{error}</span>
           </div>
         )}
 
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-5">
+        <div className="bg-white/95 rounded-2xl p-6 sm:p-8 border border-stone-200/90 shadow-sm space-y-5">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                Email
+              <label className="block text-xs font-medium text-stone-700 mb-1.5">
+                Alamat Email
               </label>
               <div className="relative">
                 <input
@@ -93,20 +98,20 @@ export default function LoginPage() {
                   placeholder="nama@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-stone-50/60 border border-stone-200 text-stone-900 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-900 transition-all placeholder:text-stone-400"
                 />
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label className="text-xs font-medium text-stone-700">
                   Kata Sandi
                 </label>
-                <span className="text-xs text-blue-600 hover:underline cursor-pointer">
-                  Lupa Sandi?
-                </span>
+                <Link href="/help" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                  Pusat Bantuan
+                </Link>
               </div>
               <div className="relative">
                 <input
@@ -115,22 +120,22 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-stone-50/60 border border-stone-200 text-stone-900 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-900 transition-all placeholder:text-stone-400"
                 />
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-100 font-medium text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
-                <span>Sedang Masuk...</span>
+                <span>Sedang Memproses...</span>
               ) : (
                 <>
-                  <span>Masuk Sekarang</span>
+                  <span>Masuk ke Akun</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -138,34 +143,35 @@ export default function LoginPage() {
           </form>
 
           {/* 1-Click Demo Accounts */}
-          <div className="pt-4 border-t border-slate-100 space-y-2">
-            <span className="text-[11px] font-semibold text-slate-400 block text-center uppercase tracking-wider">
-              1-Click Akun Demo Bawaan:
+          <div className="pt-4 border-t border-stone-100 space-y-2">
+            <span className="text-[11px] font-medium text-stone-500 block text-center">
+              Akses Cepat Pengujian:
             </span>
-            <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => handleDemoLogin("admin@jnshop.com", "admin123456")}
-                className="p-2.5 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors flex items-center justify-center gap-1.5"
+                className="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200/90 transition-colors flex items-center justify-center gap-1.5 font-medium cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Admin Owner</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                <span>Pemilik (Admin)</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleDemoLogin("budi@gmail.com", "customer123456")}
-                className="p-2.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center justify-center gap-1.5"
+                className="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200/90 transition-colors flex items-center justify-center gap-1.5 font-medium cursor-pointer"
               >
-                <span>Demo Pembeli</span>
+                <UserCheck className="w-3.5 h-3.5 text-stone-600" />
+                <span>Pelanggan (Budi)</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Footer Link */}
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-xs text-stone-500">
           Belum memiliki akun JNshop?{" "}
-          <Link href="/register" className="font-bold text-blue-600 hover:underline">
+          <Link href="/register" className="font-medium text-stone-900 hover:underline">
             Daftar Akun Baru
           </Link>
         </p>
