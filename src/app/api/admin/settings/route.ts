@@ -28,6 +28,8 @@ export async function PUT(req: Request) {
       termsAndConditions,
       privacyPolicy,
       returnPolicy,
+      geminiApiKey,
+      aiModel,
     } = body;
 
     const updated = await prisma.storeSetting.upsert({
@@ -45,6 +47,8 @@ export async function PUT(req: Request) {
         termsAndConditions: termsAndConditions || null,
         privacyPolicy: privacyPolicy || null,
         returnPolicy: returnPolicy || null,
+        geminiApiKey: geminiApiKey || null,
+        aiModel: aiModel || "gemini-2.5-flash",
       },
       update: {
         storeName,
@@ -58,6 +62,8 @@ export async function PUT(req: Request) {
         termsAndConditions,
         privacyPolicy,
         returnPolicy,
+        geminiApiKey,
+        aiModel,
       },
     });
 
@@ -68,7 +74,7 @@ export async function PUT(req: Request) {
         action: "STORE_SETTINGS_UPDATE",
         entityType: "STORE_SETTING",
         entityId: "default",
-        detailsJson: JSON.stringify({ storeName }),
+        detailsJson: JSON.stringify({ storeName, aiConfigured: Boolean(geminiApiKey) }),
       },
     });
 

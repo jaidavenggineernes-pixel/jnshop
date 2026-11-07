@@ -330,6 +330,26 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
                 <span>{copiedLink ? "Link Disalin!" : "Bagikan"}</span>
               </button>
             </div>
+
+            {/* Ask AI directly about this product */}
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(
+                    new CustomEvent("jnshop-open-ai", {
+                      detail: {
+                        prompt: `Beri tahu saya spesifikasi utama dan keunggulan dari ${product.name}, apakah produk ini cocok untuk saya?`,
+                      },
+                    })
+                  );
+                }
+              }}
+              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-violet-50 border border-indigo-200 hover:border-indigo-400 text-indigo-700 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:bg-indigo-100/60 cursor-pointer shadow-2xs group"
+            >
+              <Sparkles className="w-4 h-4 text-amber-500 group-hover:rotate-12 transition-transform" />
+              <span>Tanya JNshop AI tentang {product.name}</span>
+            </button>
           </div>
         </div>
       </div>

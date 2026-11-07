@@ -443,6 +443,8 @@ model StoreSetting {
   termsAndConditions  String?
   privacyPolicy       String?
   returnPolicy        String?
+  geminiApiKey        String?
+  aiModel             String?  @default("gemini-2.5-flash")
   updatedAt           DateTime @updatedAt
 }
 
