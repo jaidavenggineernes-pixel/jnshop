@@ -6,7 +6,7 @@ import { UserSession } from "@/types";
 interface AuthContextType {
   user: UserSession | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: UserSession }>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: data.error || "Gagal login" };
       }
       setUser(data.user);
-      return { success: true };
+      return { success: true, user: data.user };
     } catch {
       return { success: false, error: "Koneksi gagal. Coba lagi." };
     }
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: data.error || "Gagal registrasi" };
       }
       setUser(data.user);
-      return { success: true };
+      return { success: true, user: data.user };
     } catch {
       return { success: false, error: "Koneksi gagal. Coba lagi." };
     }

@@ -2,12 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Lock, Mail, AlertCircle, Sparkles, UserCheck } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Lock, Mail, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -24,32 +26,15 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.success) {
-      if (email.toLowerCase().includes("admin")) {
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else if (res.user?.role === "ADMIN") {
         router.push("/admin");
       } else {
         router.push("/account");
       }
     } else {
-      setError(res.error || "Gagal masuk. Periksa email dan password Anda.");
-    }
-  };
-
-  const handleDemoLogin = async (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError("");
-    setLoading(true);
-    const res = await login(demoEmail, demoPass);
-    setLoading(false);
-
-    if (res.success) {
-      if (demoEmail.includes("admin")) {
-        router.push("/admin");
-      } else {
-        router.push("/account");
-      }
-    } else {
-      setError(res.error || "Gagal masuk ke akun demo");
+      setError(res.error || "Gagal masuk. Periksa kembali email dan kata sandi Anda.");
     }
   };
 
@@ -110,7 +95,7 @@ export default function LoginPage() {
                   Kata Sandi
                 </label>
                 <Link href="/help" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">
-                  Pusat Bantuan
+                  Lupa Sandi?
                 </Link>
               </div>
               <div className="relative">
@@ -141,31 +126,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* 1-Click Demo Accounts */}
-          <div className="pt-4 border-t border-stone-100 space-y-2">
-            <span className="text-[11px] font-medium text-stone-500 block text-center">
-              Akses Cepat Pengujian:
-            </span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleDemoLogin("admin@jnshop.com", "admin123456")}
-                className="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200/90 transition-colors flex items-center justify-center gap-1.5 font-medium cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                <span>Pemilik (Admin)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoLogin("budi@gmail.com", "customer123456")}
-                className="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200/90 transition-colors flex items-center justify-center gap-1.5 font-medium cursor-pointer"
-              >
-                <UserCheck className="w-3.5 h-3.5 text-stone-600" />
-                <span>Pelanggan (Budi)</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer Link */}
@@ -177,5 +137,19 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-[75vh] flex items-center justify-center text-xs text-stone-500">
+          Memuat formulir masuk...
+        </div>
+      }
+    >
+      <LoginForm />
+    </React.Suspense>
   );
 }
