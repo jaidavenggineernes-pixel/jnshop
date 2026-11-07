@@ -23,17 +23,14 @@ function LoginForm() {
     setLoading(true);
 
     const res = await login(email, password);
-    setLoading(false);
 
     if (res.success) {
-      if (redirectUrl) {
-        router.push(redirectUrl);
-      } else if (res.user?.role === "ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/account");
-      }
+      const target = redirectUrl || (res.user?.role === "ADMIN" ? "/admin" : "/account");
+      // Use hard navigation so the browser immediately commits the auth cookie
+      // and Next.js server gets a fresh HTTP request without SPA router cache interference
+      window.location.href = target;
     } else {
+      setLoading(false);
       setError(res.error || "Gagal masuk. Periksa kembali email dan kata sandi Anda.");
     }
   };

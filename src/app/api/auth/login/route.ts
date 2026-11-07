@@ -40,11 +40,13 @@ export async function POST(req: Request) {
       avatar: user.avatar,
     });
 
-    // Set cookie
+    // Set cookie (only enforce secure flag if request is actually HTTPS)
+    const isHttps =
+      req.headers.get("x-forwarded-proto") === "https" || req.url.startsWith("https://");
     const cookieStore = await cookies();
     cookieStore.set(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttps,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: "/",
