@@ -108,7 +108,8 @@ export function OrderView({ order, paymentMethodDetail, storeSetting }: OrderVie
   );
 
   const whatsappMessage = `Halo Kurator JNshop, saya ingin konfirmasi pesanan saya dengan nomor: ${order.orderNumber} senilai ${formatRupiah(order.grandTotal)}.`;
-  const whatsappUrl = `https://wa.me/${storeSetting?.whatsappNumber || "6281234567890"}?text=${encodeURIComponent(whatsappMessage)}`;
+  const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
+  const whatsappUrl = `https://wa.me/${cleanWa}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6 sm:space-y-8">

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -32,6 +35,8 @@ export async function PUT(req: Request) {
       aiModel,
     } = body;
 
+    const cleanWhatsapp = (whatsappNumber || "").replace(/\D/g, "");
+
     const updated = await prisma.storeSetting.upsert({
       where: { id: "default" },
       create: {
@@ -40,8 +45,8 @@ export async function PUT(req: Request) {
         tagLine: tagLine || "",
         description: description || "",
         email: email || "owner@jnshop.com",
-        phone: phone || "+6281234567890",
-        whatsappNumber: whatsappNumber || "6281234567890",
+        phone: phone || "+62 851-9121-9129",
+        whatsappNumber: cleanWhatsapp || "6285191219129",
         address: address || "Jakarta, Indonesia",
         bannerAnnouncement: bannerAnnouncement || null,
         termsAndConditions: termsAndConditions || null,
@@ -56,7 +61,7 @@ export async function PUT(req: Request) {
         description,
         email,
         phone,
-        whatsappNumber,
+        whatsappNumber: cleanWhatsapp,
         address,
         bannerAnnouncement,
         termsAndConditions,
@@ -67,6 +72,16 @@ export async function PUT(req: Request) {
       },
     });
 
+    // Revalidate paths so storefront and layouts update immediately
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/help");
+      revalidatePath("/admin/settings");
+    } catch (e) {
+      console.warn("Revalidate path warning:", e);
+    }
+
     // Audit log
     await prisma.auditLog.create({
       data: {
@@ -74,12 +89,25 @@ export async function PUT(req: Request) {
         action: "STORE_SETTINGS_UPDATE",
         entityType: "STORE_SETTING",
         entityId: "default",
-        detailsJson: JSON.stringify({ storeName, aiConfigured: Boolean(geminiApiKey) }),
+        detailsJson: JSON.stringify({
+          storeName,
+          phone,
+          whatsappNumber: cleanWhatsapp,
+          aiConfigured: Boolean(geminiApiKey),
+        }),
       },
     });
 
-    return NextResponse.json({ success: true, setting: updated });
-  } catch (error) {
+    return NextResponse.json({
+      success: true,
+      setting: updated,
+      message: "Pengaturan toko dan nomor kontak berhasil diperbarui di seluruh website.",
+    });
+  } catch (error: any) {
+    console.error("PUT store settings error:", error);
+    if (error?.message === "UNAUTHORIZED" || error?.message === "FORBIDDEN_ADMIN_ONLY") {
+      return NextResponse.json({ error: "Akses ditolak: Khusus Administrator." }, { status: 403 });
+    }
     return NextResponse.json({ error: "Gagal memperbarui pengaturan toko." }, { status: 500 });
   }
 }

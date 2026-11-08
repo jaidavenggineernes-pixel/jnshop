@@ -21,6 +21,8 @@ import {
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [featuredProducts, latestProducts, categories, coupons, storeSetting] =
     await Promise.all([
@@ -164,13 +166,13 @@ export default async function HomePage() {
                 <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 flex items-center justify-between text-xs">
                   <span className="text-stone-600">Butuh panduan sebelum membeli?</span>
                   <a
-                    href="https://wa.me/6281234567890"
+                    href={`https://wa.me/${(storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "")}?text=${encodeURIComponent(`Halo Kurator ${storeSetting?.storeName || "JNshop"}, saya ingin berkonsultasi mengenai setup & produk.`)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Tanya Owner</span>
+                    <span>Tanya Owner ({storeSetting?.phone || "+62 851-9121-9129"})</span>
                   </a>
                 </div>
               </div>

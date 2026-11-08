@@ -43,12 +43,15 @@ interface Message {
   isTyping?: boolean;
 }
 
-export function AIChatAssistant() {
+export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
   const { addItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
+
+  const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
+  const storeTitle = storeSetting?.storeName || "JNshop";
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -539,12 +542,12 @@ export function AIChatAssistant() {
               <span>Butuh bantuan manusia langsung?</span>
             </span>
             <a
-              href="https://wa.me/6281234567890?text=Halo%20Admin%20JNshop,%20saya%20butuh%20bantuan%20terkait%20pesanan%20saya"
+              href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo Admin ${storeTitle}, saya butuh bantuan terkait produk & pesanan saya.`)}`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10px] transition-colors"
             >
-              <span>WhatsApp Admin</span>
+              <span>WhatsApp Admin (+{cleanWa})</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>

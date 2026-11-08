@@ -13,10 +13,15 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function HelpPage() {
   const storeSetting = await prisma.storeSetting.findUnique({
     where: { id: "default" },
   });
+
+  const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
+  const storeTitle = storeSetting?.storeName || "JNshop";
 
   const faqs = [
     {
@@ -143,13 +148,13 @@ export default async function HelpPage() {
               Respon ramah setiap hari pada jam operasional toko (08.00 - 22.00 WIB).
             </p>
             <a
-              href={`https://wa.me/${storeSetting?.whatsappNumber || "6281234567890"}?text=Halo%20Kurator%20JNshop,%20saya%20ingin%20berkonsultasi`}
+              href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo Kurator ${storeTitle}, saya ingin berkonsultasi mengenai produk & pesanan.`)}`}
               target="_blank"
               rel="noreferrer"
               className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-900 font-medium text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>Chat WhatsApp (+{storeSetting?.whatsappNumber || "6281234567890"})</span>
+              <span>Chat WhatsApp (+{cleanWa})</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>

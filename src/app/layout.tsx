@@ -8,6 +8,8 @@ import { AIChatAssistant } from "@/components/ai-chat-assistant";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "JNshop — Toko Online Pribadi & Produk Digital Resmi",
   description:
@@ -20,24 +22,33 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   let categories: any[] = [];
+  let storeSetting: any = null;
+
   try {
-    categories = await prisma.category.findMany({
-      orderBy: { displayOrder: "asc" },
-      select: { id: true, name: true, slug: true },
-    });
+    const [cats, setting] = await Promise.all([
+      prisma.category.findMany({
+        orderBy: { displayOrder: "asc" },
+        select: { id: true, name: true, slug: true },
+      }),
+      prisma.storeSetting.findUnique({
+        where: { id: "default" },
+      }),
+    ]);
+    categories = cats;
+    storeSetting = setting;
   } catch (err) {
-    console.error("Failed to load categories in root layout:", err);
+    console.error("Failed to load layout data:", err);
   }
 
   return (
     <html lang="id" className="h-full antialiased scroll-smooth">
       <body className="min-h-full flex flex-col bg-[#faf9f6] text-stone-900 font-sans selection:bg-stone-900 selection:text-amber-100">
         <Providers>
-          <Navbar categories={categories} />
+          <Navbar categories={categories} storeSetting={storeSetting} />
           <main className="flex-1 pb-16 sm:pb-0">{children}</main>
-          <Footer />
+          <Footer storeSetting={storeSetting} />
           <CartDrawer />
-          <AIChatAssistant />
+          <AIChatAssistant storeSetting={storeSetting} />
           <MobileBottomNav />
         </Providers>
       </body>

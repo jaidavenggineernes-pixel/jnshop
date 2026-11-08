@@ -22,7 +22,13 @@ import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 
-export function Navbar({ categories = [] }: { categories?: any[] }) {
+export function Navbar({
+  categories = [],
+  storeSetting,
+}: {
+  categories?: any[];
+  storeSetting?: any;
+}) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { itemCount, setIsCartOpen } = useCart();
@@ -31,6 +37,13 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
+  const bannerText =
+    storeSetting?.bannerAnnouncement ||
+    "Koleksi Alat Kerja & Solusi Digital Terkurasi • Pengiriman dari Jakarta • Voucher 15%: JNSHOPNEW";
+  const storeTitle = storeSetting?.storeName || "JNshop";
+  const storeTagline = storeSetting?.tagLine || "Boutique & Atelier";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,9 +59,7 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <p className="flex items-center justify-center gap-1.5 font-medium tracking-wide text-[11px] sm:text-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-            <span>
-              Koleksi Alat Kerja & Solusi Digital Terkurasi • Pengiriman dari Jakarta • Voucher 15%: <strong className="text-amber-300 tracking-wider font-mono">JNSHOPNEW</strong>
-            </span>
+            <span>{bannerText}</span>
           </p>
           <div className="flex items-center gap-4 text-stone-400 text-xs">
             <Link href="/help" className="hover:text-stone-200 transition-colors">
@@ -60,13 +71,13 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
             </Link>
             <span className="text-stone-700">|</span>
             <a
-              href="https://wa.me/6281234567890"
+              href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo ${storeTitle}, saya ingin berkonsultasi mengenai produk.`)}`}
               target="_blank"
               rel="noreferrer"
               className="text-stone-300 hover:text-emerald-400 transition-colors flex items-center gap-1"
             >
               <MessageCircle className="w-3 h-3 text-emerald-400" />
-              <span>WhatsApp</span>
+              <span>WhatsApp: +{cleanWa}</span>
             </a>
           </div>
         </div>
@@ -80,14 +91,14 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-3 group">
                 <div className="w-10 h-10 rounded-xl bg-[#1c1917] text-[#faf9f6] flex items-center justify-center font-bold text-lg shadow-sm border border-stone-800 group-hover:scale-102 transition-transform">
-                  JN
+                  {storeTitle.substring(0, 2).toUpperCase()}
                 </div>
                 <div className="flex flex-col">
                   <span className="font-extrabold text-xl tracking-tight text-[#1c1917]">
-                    JN<span className="text-stone-500 font-normal">shop</span>
+                    {storeTitle}
                   </span>
                   <span className="text-[9px] uppercase tracking-widest font-semibold text-stone-400">
-                    Boutique & Atelier
+                    {storeTagline}
                   </span>
                 </div>
               </Link>
@@ -334,6 +345,15 @@ export function Navbar({ categories = [] }: { categories?: any[] }) {
                 <ShieldCheck className="w-4 h-4 text-stone-500" />
                 Garansi Retur 7 Hari & FAQ
               </Link>
+              <a
+                href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo ${storeTitle}, saya ingin bertanya mengenai layanan & produk.`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-emerald-700 py-1.5 font-semibold"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>Chat WhatsApp: +{cleanWa}</span>
+              </a>
             </div>
           </div>
         )}

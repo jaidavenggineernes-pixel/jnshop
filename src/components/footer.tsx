@@ -9,7 +9,18 @@ import {
   Lock,
 } from "lucide-react";
 
-export function Footer() {
+export function Footer({ storeSetting }: { storeSetting?: any }) {
+  const storeTitle = storeSetting?.storeName || "JNshop";
+  const storeTagline = storeSetting?.tagLine || "Boutique & Atelier";
+  const storeDesc =
+    storeSetting?.description ||
+    "Ruang belanja mandiri dengan kurasi peralatan meja kerja ergonomis, gawai pilihan, serta aset digital berkualitas tinggi yang dibuat dengan rasa dan dedikasi penuh.";
+  const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
+  const phoneDisplay =
+    storeSetting?.phone || (cleanWa ? `+${cleanWa}` : "+62 851-9121-9129");
+  const email = storeSetting?.email || "owner@jnshop.com";
+  const address = storeSetting?.address || "Jakarta, Indonesia";
+
   return (
     <footer className="bg-[#1c1917] text-stone-400 text-sm mt-auto border-t border-stone-800/80">
       {/* Human Commitments / Boutique Value Propositions */}
@@ -39,7 +50,7 @@ export function Footer() {
                   Pengiriman & Akses Aman
                 </h4>
                 <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
-                  Packing berlapis dari Jakarta, lisensi digital langsung terkirim.
+                  Packing rapi dan aman, lisensi digital langsung terkirim seketika.
                 </p>
               </div>
             </div>
@@ -64,7 +75,7 @@ export function Footer() {
               </div>
               <div>
                 <h4 className="font-semibold text-stone-100 text-sm font-serif tracking-tight">
-                  JNshop Concierge
+                  {storeTitle} Concierge
                 </h4>
                 <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
                   Asisten belanja cerdas & jalur WhatsApp personal langsung ke kurator.
@@ -83,31 +94,43 @@ export function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-stone-800 border border-stone-700 flex items-center justify-center text-amber-200 font-serif font-bold text-sm">
-                JN
+                {storeTitle.substring(0, 2).toUpperCase()}
               </div>
               <div className="flex flex-col">
                 <span className="font-serif text-lg tracking-tight text-stone-100 font-bold">
-                  JNshop
+                  {storeTitle}
                 </span>
                 <span className="text-[10px] tracking-widest uppercase font-medium text-amber-400/80">
-                  Boutique & Atelier
+                  {storeTagline}
                 </span>
               </div>
             </div>
             <p className="text-xs sm:text-sm text-stone-400 leading-relaxed max-w-sm">
-              Ruang belanja mandiri dengan kurasi peralatan meja kerja ergonomis, gawai pilihan, serta aset digital berkualitas tinggi yang dibuat dengan rasa dan dedikasi penuh.
+              {storeDesc}
             </p>
-            <div className="pt-2">
-              <span className="text-xs text-stone-500 block mb-1">Hubungi Kurator / Pemilik Toko:</span>
-              <a
-                href="https://wa.me/6281234567890"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-amber-300 hover:text-amber-200 transition-colors"
-              >
-                <span>WhatsApp Personal: +62 812-3456-7890</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+            <div className="pt-2 space-y-1.5 text-xs text-stone-400">
+              <div className="flex items-center gap-2">
+                <span className="text-stone-500">Alamat:</span>
+                <span className="text-stone-300">{address}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-stone-500">Email:</span>
+                <a href={`mailto:${email}`} className="text-stone-300 hover:text-amber-200 transition-colors">
+                  {email}
+                </a>
+              </div>
+              <div className="pt-1">
+                <span className="text-stone-500 block mb-1">WhatsApp Resmi & Konsultasi:</span>
+                <a
+                  href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo ${storeTitle}, saya ingin bertanya mengenai produk dan pesanan.`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors"
+                >
+                  <span>WhatsApp: {phoneDisplay}</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -213,7 +236,7 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="border-t border-stone-800/80 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>© {new Date().getFullYear()} JNshop Atelier. Dibuat dengan dedikasi penuh di Jakarta.</p>
+          <p>© {new Date().getFullYear()} {storeTitle}. Dibuat dengan dedikasi penuh di Indonesia.</p>
           <div className="flex items-center gap-6">
             <Link href="/help#kebijakan-privasi" className="hover:text-stone-400 transition-colors">
               Kebijakan Privasi
