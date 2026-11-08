@@ -88,6 +88,8 @@ model Product {
   digitalDeliveryType String?         // "INSTANT_DOWNLOAD", "LICENSE_KEY", "MANUAL_EMAIL"
   digitalFileUrl     String?
   digitalLicenseKey  String?
+  allowCod           Boolean          @default(true) // If false, COD cannot be used for this product (always false for digital goods)
+  allowedPaymentMethods String?       // JSON array e.g. ["QRIS_INSTANT","BCA_MANUAL","MANDIRI_MANUAL","BNI_VA"]
   isActive           Boolean          @default(true)
   isFeatured         Boolean          @default(false)
   rating             Float            @default(5.0)
@@ -309,6 +311,9 @@ model PaymentMethod {
   accountNumber String?
   logoUrl      String?
   qrCodeUrl    String?  // Static QRIS image if applicable
+  minAmount    Float?   @default(0)
+  maxAmount    Float?   // Limit e.g. for COD max Rp 1.500.000 to prevent fraud
+  isForPhysicalOnly Boolean @default(false) // If true, strictly forbidden if cart contains digital goods
   isActive     Boolean  @default(true)
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())

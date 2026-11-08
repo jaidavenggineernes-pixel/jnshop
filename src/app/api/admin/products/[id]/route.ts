@@ -43,6 +43,16 @@ export async function PATCH(
     if (body.name) {
       updateData.name = body.name.trim();
     }
+    if (typeof body.allowCod === "boolean") {
+      // Digital products can NEVER use COD
+      updateData.allowCod = existing.isPhysical ? body.allowCod : false;
+    }
+    if (body.allowedPaymentMethods !== undefined) {
+      updateData.allowedPaymentMethods =
+        typeof body.allowedPaymentMethods === "string"
+          ? body.allowedPaymentMethods
+          : JSON.stringify(body.allowedPaymentMethods);
+    }
 
     const updated = await prisma.product.update({
       where: { id },

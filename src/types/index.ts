@@ -102,6 +102,8 @@ export interface ProductData {
   digitalDeliveryType?: string | null;
   digitalFileUrl?: string | null;
   digitalLicenseKey?: string | null;
+  allowCod?: boolean;
+  allowedPaymentMethods?: string | null;
   isActive: boolean;
   isFeatured: boolean;
   rating: number;

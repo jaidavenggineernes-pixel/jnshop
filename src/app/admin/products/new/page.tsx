@@ -32,6 +32,7 @@ export default function NewProductPage() {
   const [categoryId, setCategoryId] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [allowCod, setAllowCod] = useState(true);
 
   const [generatingAI, setGeneratingAI] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -115,6 +116,7 @@ export default function NewProductPage() {
           categoryId,
           imageUrl: imageUrl.trim() || null,
           isFeatured,
+          allowCod: isPhysical ? allowCod : false,
         }),
       });
 
@@ -393,6 +395,45 @@ export default function NewProductPage() {
             </div>
           </div>
         )}
+
+        {/* Payment Rules & Anti-Loss Protection */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="font-bold text-sm text-slate-900 font-serif">
+              Aturan Metode Pembayaran & Anti-Loss
+            </h2>
+            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold">
+              Proteksi Kerugian Toko
+            </span>
+          </div>
+
+          {!isPhysical ? (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 flex items-start gap-2.5">
+              <span className="font-bold shrink-0">🔒 Produk Digital:</span>
+              <p className="text-[11px] text-rose-800 leading-relaxed">
+                Metode Cash on Delivery (COD) dinonaktifkan secara permanen untuk produk digital demi mencegah pencurian file/lisensi tanpa pembayaran. Pembeli wajib menyelesaikan pembayaran di awal (QRIS / Transfer Bank).
+              </p>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="allowCod"
+                checked={allowCod}
+                onChange={(e) => setAllowCod(e.target.checked)}
+                className="w-4 h-4 text-stone-900 rounded border-stone-300 mt-0.5 cursor-pointer"
+              />
+              <div>
+                <label htmlFor="allowCod" className="text-xs font-bold text-stone-900 cursor-pointer block">
+                  Izinkan Metode Pembayaran Cash on Delivery (COD)
+                </label>
+                <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
+                  Centang opsi ini jika Anda mengizinkan pembeli membayar saat paket diterima. Hilangkan centang jika produk bernilai tinggi atau rawan penipuan/return fiktif.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Image & Featured */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">

@@ -14,8 +14,11 @@ import {
   Tag,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Banknote,
   Binary,
+  Lock,
+  Loader2,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
@@ -42,6 +45,9 @@ function CheckoutForm() {
   // Courier & Payment Method
   const [courier, setCourier] = useState("SiCepat REG");
   const [paymentMethod, setPaymentMethod] = useState("QRIS_INSTANT");
+  const [availableMethods, setAvailableMethods] = useState<any[]>([]);
+  const [loadingMethods, setLoadingMethods] = useState(true);
+  const [hasDigitalInCart, setHasDigitalInCart] = useState(false);
 
   // Voucher
   const [couponCode, setCouponCode] = useState(couponFromQuery || "");
@@ -65,6 +71,45 @@ function CheckoutForm() {
   // Check if any physical items exist in cart
   const hasPhysicalItems = items.some((item) => item.isPhysical);
   const shippingFee = hasPhysicalItems ? (courier.includes("Express") ? 32000 : 18000) : 0;
+
+  // Dynamic Payment Method Governance (Anti-Fraud & Rules)
+  useEffect(() => {
+    async function loadPaymentMethods() {
+      if (items.length === 0) return;
+      try {
+        setLoadingMethods(true);
+        const productIds = items.map((it) => it.productId).join(",");
+        const hasDigital = items.some((it) => !it.isPhysical);
+        setHasDigitalInCart(hasDigital);
+        const estTotal = Math.max(0, subtotal - discountAmount + shippingFee);
+
+        const res = await fetch(
+          `/api/payment-methods?productIds=${encodeURIComponent(productIds)}&hasDigital=${hasDigital}&amount=${estTotal}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const list = data.methods || [];
+          setAvailableMethods(list);
+
+          // If current selected method is unavailable, auto-pick first available
+          const currentMethodEligible = list.find(
+            (m: any) => m.code === paymentMethod && m.isAvailable
+          );
+          if (!currentMethodEligible) {
+            const firstValid = list.find((m: any) => m.isAvailable);
+            if (firstValid) {
+              setPaymentMethod(firstValid.code);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load payment methods:", err);
+      } finally {
+        setLoadingMethods(false);
+      }
+    }
+    loadPaymentMethods();
+  }, [items, subtotal, discountAmount, shippingFee]);
 
   // Auto apply coupon if present in query
   useEffect(() => {
@@ -442,141 +487,117 @@ function CheckoutForm() {
               </div>
             </div>
 
-            {/* 3. Payment Methods */}
+            {/* 3. Payment Methods (Governed Dynamically with Anti-Loss Safeguards) */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
-              <h2 className="font-bold text-base text-slate-900 flex items-center gap-2 pb-3 border-b border-slate-100">
-                <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
-                  3
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h2 className="font-bold text-base text-slate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-stone-900 text-white text-xs flex items-center justify-center font-bold">
+                    3
+                  </span>
+                  Pilih Metode Pembayaran
+                </h2>
+                <span className="text-[11px] text-stone-500 font-medium">
+                  {availableMethods.filter((m) => m.isAvailable).length} Opsi Tersedia
                 </span>
-                Pilih Metode Pembayaran
-              </h2>
-
-              <div className="space-y-3">
-                {/* QRIS */}
-                <div
-                  onClick={() => setPaymentMethod("QRIS_INSTANT")}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    paymentMethod === "QRIS_INSTANT"
-                      ? "border-blue-600 bg-blue-50/60 shadow-sm"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <QrCode className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-slate-900">QRIS Instant All Payment</div>
-                      <p className="text-xs text-slate-500">
-                        Scan QRIS via BCA Mobile, Livin, GoPay, OVO, Dana, ShopeePay
-                      </p>
-                    </div>
-                  </div>
-                  {paymentMethod === "QRIS_INSTANT" && (
-                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
-                  )}
-                </div>
-
-                {/* Transfer BCA */}
-                <div
-                  onClick={() => setPaymentMethod("BCA_MANUAL")}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    paymentMethod === "BCA_MANUAL"
-                      ? "border-stone-900 bg-stone-50 shadow-sm"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <Building className="w-5 h-5 text-stone-800" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-slate-900">Transfer Bank BCA</div>
-                      <p className="text-xs text-slate-500">
-                        Rekening BCA 1234-5678-90 a/n JNshop Official (Upload bukti bayar)
-                      </p>
-                    </div>
-                  </div>
-                  {paymentMethod === "BCA_MANUAL" && (
-                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
-                  )}
-                </div>
-
-                {/* Transfer Mandiri */}
-                <div
-                  onClick={() => setPaymentMethod("MANDIRI_MANUAL")}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    paymentMethod === "MANDIRI_MANUAL"
-                      ? "border-stone-900 bg-stone-50 shadow-sm"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <Building className="w-5 h-5 text-stone-800" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-slate-900">Transfer Bank Mandiri</div>
-                      <p className="text-xs text-slate-500">
-                        Rekening Mandiri 9876-5432-1098 a/n JNshop Official
-                      </p>
-                    </div>
-                  </div>
-                  {paymentMethod === "MANDIRI_MANUAL" && (
-                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
-                  )}
-                </div>
-
-                {/* BNI VA */}
-                <div
-                  onClick={() => setPaymentMethod("BNI_VA")}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                    paymentMethod === "BNI_VA"
-                      ? "border-stone-900 bg-stone-50 shadow-sm"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                      <CreditCard className="w-5 h-5 text-stone-800" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-slate-900">BNI Virtual Account</div>
-                      <p className="text-xs text-slate-500">Verifikasi otomatis tanpa perlu konfirmasi</p>
-                    </div>
-                  </div>
-                  {paymentMethod === "BNI_VA" && (
-                    <CheckCircle2 className="w-5 h-5 text-stone-900" />
-                  )}
-                </div>
-
-                {/* COD (Only if physical) */}
-                {hasPhysicalItems && (
-                  <div
-                    onClick={() => setPaymentMethod("COD")}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
-                      paymentMethod === "COD"
-                        ? "border-stone-900 bg-stone-50 shadow-sm"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800">
-                        <Banknote className="w-5 h-5 text-stone-800" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm text-slate-900">Cash on Delivery (COD)</div>
-                        <p className="text-xs text-slate-500">
-                          Bayar tunai kepada kurir saat pesanan sampai di alamat Anda
-                        </p>
-                      </div>
-                    </div>
-                    {paymentMethod === "COD" && (
-                      <CheckCircle2 className="w-5 h-5 text-stone-900" />
-                    )}
-                  </div>
-                )}
               </div>
+
+              {/* Digital Goods Anti-Loss Callout */}
+              {hasDigitalInCart && (
+                <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Proteksi Keamanan Produk Digital Aktif:</span>
+                    <p className="text-[11px] text-blue-800 mt-0.5 leading-relaxed">
+                      Keranjang Anda memuat produk digital / lisensi software. Demi keamanan dan mencegah kerugian pembatalan sepihak, metode <strong>Cash on Delivery (COD) tidak tersedia</strong>. Lisensi dan file unduhan langsung terkirim seketika setelah pembayaran QRIS atau Transfer terverifikasi.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {loadingMethods ? (
+                <div className="p-8 text-center text-xs text-stone-400 space-y-2">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-stone-600" />
+                  <p>Memverifikasi aturan pembayaran produk...</p>
+                </div>
+              ) : availableMethods.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-center space-y-1">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 mx-auto" />
+                  <p className="font-bold">Tidak ada metode pembayaran yang memenuhi syarat</p>
+                  <p className="text-[11px] text-amber-800">
+                    Silakan hubungi admin toko jika Anda mengalami kendala pembayaran.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableMethods.map((method) => {
+                    const isSelected = paymentMethod === method.code;
+                    const isAllowed = method.isAvailable;
+
+                    return (
+                      <div
+                        key={method.id}
+                        onClick={() => {
+                          if (isAllowed) {
+                            setPaymentMethod(method.code);
+                          }
+                        }}
+                        className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          !isAllowed
+                            ? "border-stone-200 bg-stone-50/70 opacity-60 cursor-not-allowed"
+                            : isSelected
+                            ? "border-stone-900 bg-stone-50 shadow-sm cursor-pointer"
+                            : "border-slate-200 hover:border-slate-300 cursor-pointer"
+                        }`}
+                      >
+                        <div className="flex items-start sm:items-center gap-3.5">
+                          <div
+                            className={`p-2.5 rounded-xl shrink-0 ${
+                              method.code === "QRIS_INSTANT"
+                                ? "bg-blue-50 text-blue-600"
+                                : method.code === "COD"
+                                ? "bg-stone-100 text-stone-800"
+                                : "bg-slate-100 text-slate-800"
+                            }`}
+                          >
+                            {method.code === "QRIS_INSTANT" ? (
+                              <QrCode className="w-5 h-5 text-blue-600" />
+                            ) : method.code === "COD" ? (
+                              <Banknote className="w-5 h-5 text-stone-800" />
+                            ) : (
+                              <Building className="w-5 h-5 text-stone-800" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-slate-900">
+                                {method.name}
+                              </span>
+                              {!isAllowed && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                  <Lock className="w-2.5 h-2.5" />
+                                  <span>Tidak Tersedia</span>
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              {method.description || "Metode pembayaran resmi JNshop"}
+                            </p>
+                            {!isAllowed && method.restrictionReason && (
+                              <p className="text-[11px] text-amber-700 font-semibold mt-1">
+                                ⚠️ {method.restrictionReason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {isAllowed && isSelected && (
+                          <CheckCircle2 className="w-5 h-5 text-stone-900 shrink-0 self-end sm:self-center" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 

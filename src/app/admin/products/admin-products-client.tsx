@@ -32,6 +32,8 @@ export interface ProductItem {
   isPhysical: boolean;
   isActive: boolean;
   isFeatured: boolean;
+  allowCod?: boolean;
+  allowedPaymentMethods?: string | null;
   createdAt: Date | string;
   category: {
     id?: string;
@@ -255,13 +257,23 @@ export default function AdminProductsClient({
           </p>
         </div>
 
-        <Link
-          href="/admin/products/new"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 font-medium text-xs shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Tambah Produk Baru</span>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/admin/payments"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-xs shadow-xs transition-all"
+          >
+            <ShieldAlert className="w-4 h-4 text-amber-600" />
+            <span>Aturan Pembayaran & Anti-Loss</span>
+          </Link>
+
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 font-medium text-xs shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Produk Baru</span>
+          </Link>
+        </div>
       </div>
 
       {/* Tab Filters & Search Bar */}

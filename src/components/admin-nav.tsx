@@ -13,6 +13,7 @@ import {
   Settings,
   FileSpreadsheet,
   LayoutTemplate,
+  CreditCard,
   ArrowLeft,
   ExternalLink,
   Menu,
@@ -55,6 +56,12 @@ export function AdminNav({ user }: AdminNavProps) {
       href: "/admin/categories",
       icon: FolderTree,
       isActive: pathname?.startsWith("/admin/categories"),
+    },
+    {
+      label: "Metode Bayar & Anti-Fraud",
+      href: "/admin/payments",
+      icon: CreditCard,
+      isActive: pathname?.startsWith("/admin/payments"),
     },
     {
       label: "Daftar Pelanggan",

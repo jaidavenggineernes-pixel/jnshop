@@ -121,6 +121,82 @@ export async function POST(req: Request) {
     const grandTotal = Math.max(0, totalAmount - discountAmount + shippingFee);
     const orderNumber = generateOrderNumber();
 
+    // 3.5 STRICT PAYMENT METHOD VALIDATION (Anti-Fraud & Anti-Loss Protection)
+    const selectedMethod = await prisma.paymentMethod.findUnique({
+      where: { code: paymentMethod },
+    });
+
+    if (!selectedMethod || !selectedMethod.isActive) {
+      return NextResponse.json(
+        { error: `Metode pembayaran "${paymentMethod}" sedang tidak aktif atau tidak tersedia.` },
+        { status: 400 }
+      );
+    }
+
+    if (paymentMethod === "COD") {
+      // Rule 1: COD is strictly prohibited if order contains ANY digital product
+      const hasAnyDigitalItem = orderItemsData.some((oi) => oi.isDigital);
+      if (hasAnyDigitalItem) {
+        return NextResponse.json(
+          {
+            error:
+              "Pesanan Anda memuat produk digital. Metode Cash on Delivery (COD) dilarang keras untuk produk digital demi keamanan transaksi dan pencegahan kerugian.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Rule 2: Check if any physical product in the order has allowCod === false
+      for (const item of items) {
+        const prod = await prisma.product.findUnique({
+          where: { id: item.productId },
+          select: { name: true, allowCod: true },
+        });
+        if (prod && !prod.allowCod) {
+          return NextResponse.json(
+            {
+              error: `Produk "${prod.name}" tidak mengizinkan pembayaran COD oleh kebijakan pemilik toko. Silakan pilih QRIS atau Transfer Bank.`,
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Rule 3: Check COD transaction limit
+      const maxCodLimit = selectedMethod.maxAmount || 1500000;
+      if (grandTotal > maxCodLimit) {
+        return NextResponse.json(
+          {
+            error: `Total belanja (Rp ${grandTotal.toLocaleString("id-ID")}) melebihi batas maksimal COD (Rp ${maxCodLimit.toLocaleString("id-ID")}). Silakan gunakan metode QRIS atau Transfer Bank.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Rule 4: Per-product payment restrictions
+    for (const item of items) {
+      const prod = await prisma.product.findUnique({
+        where: { id: item.productId },
+        select: { name: true, allowedPaymentMethods: true },
+      });
+      if (prod?.allowedPaymentMethods) {
+        try {
+          const allowed = JSON.parse(prod.allowedPaymentMethods);
+          if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(paymentMethod)) {
+            return NextResponse.json(
+              {
+                error: `Produk "${prod.name}" hanya dapat dibeli menggunakan metode: ${allowed.join(", ")}.`,
+              },
+              { status: 400 }
+            );
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
     // 4. Create the complete Order record
     const order = await prisma.order.create({
       data: {

@@ -96,6 +96,7 @@ export async function POST(req: Request) {
         sku: sku || null,
         weight: weight ? parseFloat(weight) : 0.5,
         isPhysical: isPhysical !== false,
+        allowCod: isPhysical !== false ? (body.allowCod !== false) : false,
         digitalDeliveryType: digitalDeliveryType || null,
         digitalFileUrl: digitalFileUrl || null,
         digitalLicenseKey: digitalLicenseKey || null,
