@@ -35,6 +35,7 @@ function CheckoutForm() {
   // Checkout Form State
   const [recipientName, setRecipientName] = useState(user?.name || "");
   const [recipientPhone, setRecipientPhone] = useState(user?.phone || "");
+  const [customerEmail, setCustomerEmail] = useState(user?.email || "");
   const [streetAddress, setStreetAddress] = useState("");
   const [province, setProvince] = useState("DKI Jakarta");
   const [city, setCity] = useState("Jakarta Selatan");
@@ -65,6 +66,7 @@ function CheckoutForm() {
     if (user) {
       if (!recipientName) setRecipientName(user.name);
       if (!recipientPhone && user.phone) setRecipientPhone(user.phone);
+      if (!customerEmail && user.email) setCustomerEmail(user.email);
     }
   }, [user]);
 
@@ -160,6 +162,17 @@ function CheckoutForm() {
       return;
     }
 
+    // QRIS Strict Email Validation (Customer must provide email for dynamic QRIS delivery)
+    const isQrisSelected = paymentMethod === "QRIS_INSTANT" || paymentMethod.includes("QRIS");
+    if (isQrisSelected) {
+      if (!customerEmail.trim() || !customerEmail.includes("@") || customerEmail.trim().length < 5) {
+        setErrorMessage(
+          "Alamat email aktif wajib diisi untuk metode pembayaran QRIS agar admin dapat mengirimkan kode QRIS sesuai nominal belanja Anda."
+        );
+        return;
+      }
+    }
+
     if (hasPhysicalItems && (!streetAddress.trim() || !city.trim() || !postalCode.trim())) {
       setErrorMessage("Alamat lengkap pengiriman wajib diisi untuk produk fisik.");
       return;
@@ -176,6 +189,7 @@ function CheckoutForm() {
       const payload = {
         recipientName: recipientName.trim(),
         recipientPhone: recipientPhone.trim(),
+        customerEmail: customerEmail.trim() || null,
         shippingAddress: hasPhysicalItems
           ? {
               streetAddress: streetAddress.trim(),
@@ -345,7 +359,49 @@ function CheckoutForm() {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+
+                <div className="sm:col-span-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Alamat Email {paymentMethod === "QRIS_INSTANT" ? (
+                        <span className="text-amber-600 font-bold">* (Wajib Diisi untuk Pembayaran QRIS)</span>
+                      ) : (
+                        <span className="text-slate-400 font-normal">(Disarankan untuk e-receipt)</span>
+                      )}
+                    </label>
+                    {paymentMethod === "QRIS_INSTANT" && (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-200">
+                        Wajib untuk QRIS
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="email"
+                    required={paymentMethod === "QRIS_INSTANT"}
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="contoh: namaanda@gmail.com"
+                    className={`w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                      paymentMethod === "QRIS_INSTANT" && !customerEmail
+                        ? "border-amber-300 ring-2 ring-amber-100 focus:ring-amber-500"
+                        : "border-slate-200 focus:ring-blue-500"
+                    }`}
+                  />
+                </div>
               </div>
+
+              {/* QRIS Mandatory Email Notice */}
+              {paymentMethod === "QRIS_INSTANT" && (
+                <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 flex items-start gap-2.5">
+                  <QrCode className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Ketentuan Pembayaran QRIS Nominal Tepat:</span>
+                    <p className="text-[11px] text-amber-900 mt-0.5 leading-relaxed">
+                      Admin JNshop (<strong>jaidav.enggineernes@gmail.com</strong> & WA <strong>+62 851-9121-9129</strong>) akan menerima notifikasi pesanan Anda secara langsung. Kode QRIS sesuai nominal belanja tepat akan dikirimkan ke email Anda agar tidak terjadi selisih nominal atau kerugian antara kedua pihak.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 2. Shipping Address (Required if has physical goods) */}

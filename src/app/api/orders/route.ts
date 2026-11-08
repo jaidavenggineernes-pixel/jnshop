@@ -10,6 +10,7 @@ export async function POST(req: Request) {
     const {
       recipientName,
       recipientPhone,
+      customerEmail,
       shippingAddress,
       notes,
       courierName,
@@ -133,6 +134,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // 3.6 STRICT QRIS VALIDATION (Customer Email Mandatory for Exact Nominal QRIS Issuance)
+    const isQrisMethod =
+      paymentMethod === "QRIS_INSTANT" ||
+      selectedMethod.type === "QRIS" ||
+      selectedMethod.code.includes("QRIS");
+
+    if (isQrisMethod) {
+      const emailToVerify = customerEmail?.trim() || session?.email?.trim();
+      if (!emailToVerify || !emailToVerify.includes("@") || emailToVerify.length < 5) {
+        return NextResponse.json(
+          {
+            error:
+              "Alamat email pelanggan wajib diisi untuk metode pembayaran QRIS agar admin dapat mengirimkan kode QRIS sesuai nominal belanja Anda.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     if (paymentMethod === "COD") {
       // Rule 1: COD is strictly prohibited if order contains ANY digital product
       const hasAnyDigitalItem = orderItemsData.some((oi) => oi.isDigital);
@@ -211,6 +231,7 @@ export async function POST(req: Request) {
         shippingAddressJson: shippingAddress ? JSON.stringify(shippingAddress) : null,
         recipientName,
         recipientPhone,
+        customerEmail: customerEmail?.trim() || session?.email || null,
         courierName: hasPhysicalItems ? courierName || "SiCepat" : "Digital Fulfillment",
         items: {
           create: orderItemsData,

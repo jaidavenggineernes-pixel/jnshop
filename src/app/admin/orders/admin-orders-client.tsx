@@ -14,8 +14,12 @@ import {
   X,
   MessageCircle,
   AlertTriangle,
+  Mail,
+  QrCode,
+  Copy,
 } from "lucide-react";
 import { formatRupiah, formatDate } from "@/lib/utils";
+import { createAdminToCustomerQRISUrl } from "@/lib/notifications";
 
 interface AdminOrdersClientProps {
   initialOrders: any[];
@@ -265,23 +269,39 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
 
                       <td className="py-4 px-4">
                         <span className="font-bold text-slate-900 block">{ord.recipientName}</span>
+                        {ord.customerEmail && (
+                          <a
+                            href={`mailto:${ord.customerEmail}`}
+                            className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 mt-0.5 truncate max-w-[190px]"
+                          >
+                            <Mail className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{ord.customerEmail}</span>
+                          </a>
+                        )}
                         <a
                           href={`https://wa.me/${ord.recipientPhone.replace(/\D/g, "")}`}
                           target="_blank"
                           rel="noreferrer"
                           className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1 mt-0.5"
                         >
-                          <MessageCircle className="w-3 h-3" />
+                          <MessageCircle className="w-3 h-3 shrink-0" />
                           <span>{ord.recipientPhone}</span>
                         </a>
                       </td>
 
                       <td className="py-4 px-4">
-                        <span className="font-semibold text-slate-800">
-                          {payment?.paymentMethod || "Transfer"}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-semibold text-slate-800">
+                            {payment?.paymentMethod || "Transfer"}
+                          </span>
+                          {payment?.paymentMethod === "QRIS_INSTANT" && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                              QRIS Presisi
+                            </span>
+                          )}
+                        </div>
                         {payment?.paymentProofUrl && (
-                          <span className="block text-[10px] text-blue-600 font-bold">
+                          <span className="block text-[10px] text-blue-600 font-bold mt-0.5">
                             ✓ Bukti Diunggah
                           </span>
                         )}
@@ -340,11 +360,20 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
             {/* Status & Buyer Box */}
             <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <div>
-                <span className="text-slate-400">Penerima:</span>
+                <span className="text-slate-400">Penerima & Kontak:</span>
                 <p className="font-bold text-slate-900 text-sm mt-0.5">
                   {selectedOrder.recipientName}
                 </p>
-                <p className="text-slate-600">WhatsApp: {selectedOrder.recipientPhone}</p>
+                {selectedOrder.customerEmail && (
+                  <p className="text-slate-600 flex items-center gap-1 mt-0.5 font-medium">
+                    <Mail className="w-3 h-3 text-blue-600" />
+                    <span>{selectedOrder.customerEmail}</span>
+                  </p>
+                )}
+                <p className="text-slate-600 flex items-center gap-1 mt-0.5">
+                  <MessageCircle className="w-3 h-3 text-emerald-600" />
+                  <span>WhatsApp: {selectedOrder.recipientPhone}</span>
+                </p>
                 {selectedOrder.notes && (
                   <p className="text-slate-500 mt-1 italic">&quot;{selectedOrder.notes}&quot;</p>
                 )}
@@ -365,6 +394,73 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
                 </div>
               </div>
             </div>
+
+            {/* QRIS Exact Nominal Management Panel (Anti-Loss Protection) */}
+            {selectedOrder.payments?.[0]?.paymentMethod === "QRIS_INSTANT" && (
+              <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                    <QrCode className="w-4 h-4 text-amber-700" />
+                    Instruksi Pengiriman QRIS Nominal Tepat (Anti-Loss)
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 uppercase">
+                    Wajib Presisi
+                  </span>
+                </div>
+
+                <p className="text-stone-700 text-[11px] leading-relaxed">
+                  Pesanan ini menggunakan pembayaran <strong>QRIS</strong>. Kirimkan kode QRIS dengan nominal belanja presisi <strong>{formatRupiah(selectedOrder.grandTotal)}</strong> ke email pelanggan agar tidak terjadi selisih bayar atau kerugian nominal.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/90 p-3 rounded-xl border border-amber-200/60">
+                  <div>
+                    <span className="text-[10px] text-stone-500 block">Email Pelanggan:</span>
+                    <span className="font-bold text-stone-900 text-xs flex items-center gap-1 mt-0.5 truncate">
+                      <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span className="truncate">{selectedOrder.customerEmail || "Tidak ada email"}</span>
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-stone-500 block">Nominal Tagihan Tepat:</span>
+                    <span className="font-black text-blue-700 text-sm font-mono mt-0.5 block">
+                      {formatRupiah(selectedOrder.grandTotal)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                  <a
+                    href={createAdminToCustomerQRISUrl({
+                      orderNumber: selectedOrder.orderNumber,
+                      recipientName: selectedOrder.recipientName,
+                      recipientPhone: selectedOrder.recipientPhone,
+                      customerEmail: selectedOrder.customerEmail,
+                      grandTotal: selectedOrder.grandTotal,
+                    })}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Kirim QRIS via WhatsApp</span>
+                  </a>
+
+                  {selectedOrder.customerEmail && (
+                    <a
+                      href={`mailto:${selectedOrder.customerEmail}?subject=${encodeURIComponent(
+                        `Instruksi Pembayaran QRIS #${selectedOrder.orderNumber} - JNshop`
+                      )}&body=${encodeURIComponent(
+                        `Halo Kak ${selectedOrder.recipientName},\n\nTerima kasih telah berbelanja di JNshop!\nBerikut rincian pesanan Anda:\n• No. Pesanan: ${selectedOrder.orderNumber}\n• Nominal Belanja Tepat: ${formatRupiah(selectedOrder.grandTotal)}\n\nSilakan lakukan scan & transfer QRIS dengan nominal tepat ${formatRupiah(selectedOrder.grandTotal)}.\n\nSalam,\nAdmin JNshop (+62 851-9121-9129)`
+                      )}`}
+                      className="flex-1 py-2 px-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>Kirim QRIS via Email</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Payment Proof Verification Box */}
             {selectedOrder.payments?.[0]?.paymentProofUrl && (

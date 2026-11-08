@@ -232,6 +232,7 @@ model Order {
   shippingAddressJson String?     // Serialized snapshot of delivery address
   recipientName       String
   recipientPhone      String
+  customerEmail       String?     // Email of buyer (mandatory for QRIS dynamic issuance)
   
   cancelReason        String?
   trackingNumber      String?     // Resi pengiriman

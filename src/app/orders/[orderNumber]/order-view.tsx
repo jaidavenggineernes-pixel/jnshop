@@ -17,8 +17,11 @@ import {
   MessageCircle,
   Check,
   ChevronRight,
+  Mail,
+  QrCode,
 } from "lucide-react";
 import { formatRupiah, formatDate } from "@/lib/utils";
+import { createCustomerToAdminQRISUrl } from "@/lib/notifications";
 
 interface OrderViewProps {
   order: any;
@@ -344,28 +347,91 @@ export function OrderView({ order, paymentMethodDetail, storeSetting }: OrderVie
             </p>
           </div>
 
-          {/* QRIS Display */}
+          {/* QRIS Display with Exact Nominal & Anti-Loss Protection */}
           {payment?.paymentMethod === "QRIS_INSTANT" && (
-            <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-stone-50/70 rounded-xl border border-stone-200">
-              <div className="w-44 h-44 bg-white p-2 rounded-xl border border-stone-200 shadow-sm shrink-0 flex items-center justify-center">
-                <img
-                  src={
-                    paymentMethodDetail?.qrCodeUrl ||
-                    "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=JNSHOP-ORDER-" +
-                      order.orderNumber
-                  }
-                  alt="QRIS Code"
-                  className="w-full h-full object-contain"
-                />
+            <div className="space-y-4">
+              <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-200">
+                      <QrCode className="w-4 h-4 text-amber-800" />
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-xs text-amber-950">
+                        Pembayaran QRIS Presisi & Anti-Loss
+                      </h4>
+                      <p className="text-[11px] text-amber-800 mt-0.5">
+                        Notifikasi otomatis pesanan ini telah terkirim ke Admin JNshop.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 text-amber-900">
+                    Nominal Tepat
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1 border-t border-amber-200/70">
+                  <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                    <span className="text-[11px] text-amber-800 block">Nominal Tagihan Tepat:</span>
+                    <span className="text-base font-black text-amber-950 font-mono">
+                      {formatRupiah(order.grandTotal)}
+                    </span>
+                  </div>
+                  <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
+                    <span className="text-[11px] text-amber-800 block">Email Pelanggan Terdaftar:</span>
+                    <span className="text-xs font-bold text-amber-950 flex items-center gap-1 mt-0.5 truncate">
+                      <Mail className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                      <span className="truncate">{order.customerEmail || "Belum tercantum"}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <a
+                    href={createCustomerToAdminQRISUrl(
+                      {
+                        orderNumber: order.orderNumber,
+                        recipientName: order.recipientName,
+                        recipientPhone: order.recipientPhone,
+                        customerEmail: order.customerEmail,
+                        grandTotal: order.grandTotal,
+                      },
+                      storeSetting?.whatsappNumber || "6285191219129"
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Konfirmasi ke WhatsApp Admin (+62 851-9121-9129)</span>
+                  </a>
+                  <p className="text-[10px] text-stone-500 text-center mt-1.5">
+                    Admin akan mencocokkan nominal <strong>{formatRupiah(order.grandTotal)}</strong> ke email <strong>{order.customerEmail || "Anda"}</strong> untuk mencegah selisih.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2.5 text-xs text-stone-600">
-                <h4 className="font-serif font-bold text-sm text-stone-900">Cara Bayar via QRIS:</h4>
-                <ol className="list-decimal pl-4 space-y-1">
-                  <li>Buka aplikasi m-Banking (BCA Mobile, Livin, dll) atau E-Wallet (GoPay, OVO, Dana).</li>
-                  <li>Pilih menu <strong>Scan QRIS</strong>.</li>
-                  <li>Pindai QR code di samping dan pastikan nominal tagihan <strong>{formatRupiah(order.grandTotal)}</strong>.</li>
-                  <li>Selesaikan pembayaran dan unggah bukti transfer di bawah.</li>
-                </ol>
+
+              <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-stone-50/70 rounded-xl border border-stone-200">
+                <div className="w-44 h-44 bg-white p-2 rounded-xl border border-stone-200 shadow-sm shrink-0 flex items-center justify-center">
+                  <img
+                    src={
+                      paymentMethodDetail?.qrCodeUrl ||
+                      "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=JNSHOP-ORDER-" +
+                        order.orderNumber
+                    }
+                    alt="QRIS Code"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="space-y-2.5 text-xs text-stone-600">
+                  <h4 className="font-serif font-bold text-sm text-stone-900">Petunjuk Pembayaran QRIS:</h4>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Buka aplikasi m-Banking (BCA, Mandiri, BRI, dll) atau E-Wallet (GoPay, OVO, Dana).</li>
+                    <li>Pilih menu <strong>Scan QRIS</strong>.</li>
+                    <li>Pindai QR code di samping dan masukkan / pastikan nominal tepat <strong>{formatRupiah(order.grandTotal)}</strong>.</li>
+                    <li>Selesaikan pembayaran dan unggah bukti transfer di formulir bawah.</li>
+                  </ol>
+                </div>
               </div>
             </div>
           )}

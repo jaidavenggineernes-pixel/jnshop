@@ -200,6 +200,7 @@ export interface OrderData {
   shippingAddressJson?: string | null;
   recipientName: string;
   recipientPhone: string;
+  customerEmail?: string | null;
   cancelReason?: string | null;
   trackingNumber?: string | null;
   courierName?: string | null;
