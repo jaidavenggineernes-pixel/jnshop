@@ -26,6 +26,32 @@ export interface StoreSettingData {
   termsAndConditions?: string | null;
   privacyPolicy?: string | null;
   returnPolicy?: string | null;
+
+  // Homepage Hero & Showcase CMS
+  heroBadge?: string | null;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroPrimaryBtnText?: string | null;
+  heroPrimaryBtnLink?: string | null;
+  heroSecondaryBtnText?: string | null;
+  heroSecondaryBtnLink?: string | null;
+
+  guarantee1Title?: string | null;
+  guarantee1Desc?: string | null;
+  guarantee2Title?: string | null;
+  guarantee2Desc?: string | null;
+  guarantee3Title?: string | null;
+  guarantee3Desc?: string | null;
+
+  showcaseBadgeLeft?: string | null;
+  showcaseBadgeRight?: string | null;
+  showcaseImageUrl?: string | null;
+  showcaseTagPill?: string | null;
+  showcaseTitle?: string | null;
+  showcaseSubtitle?: string | null;
+  showcaseLinkText?: string | null;
+  showcaseLinkUrl?: string | null;
+  showcaseConsultText?: string | null;
 }
 
 export interface CategoryData {

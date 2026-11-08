@@ -445,6 +445,35 @@ model StoreSetting {
   returnPolicy        String?
   geminiApiKey        String?
   aiModel             String?  @default("gemini-2.5-flash")
+
+  // 21.1 Homepage Hero CMS
+  heroBadge           String?  @default("Kurasi Khusus • Toko Pribadi & Digital Studio")
+  heroTitle           String?  @default("Peralatan kerja pilihan & aset digital siap pakai, dibuat dengan rasa & dedikasi.")
+  heroSubtitle        String?
+  heroPrimaryBtnText  String?  @default("Lihat Seluruh Koleksi")
+  heroPrimaryBtnLink  String?  @default("/products")
+  heroSecondaryBtnText String? @default("⚡ Produk Digital & Lisensi")
+  heroSecondaryBtnLink String? @default("/categories/produk-digital-lisensi")
+
+  // 21.2 Trust Guarantees (3 boxes)
+  guarantee1Title     String?  @default("Garansi 7 Hari")
+  guarantee1Desc      String?  @default("Retur ganti baru / refund")
+  guarantee2Title     String?  @default("0 Detik")
+  guarantee2Desc      String?  @default("Lisensi digital langsung aktif")
+  guarantee3Title     String?  @default("Personal")
+  guarantee3Desc      String?  @default("Dukungan pemilik toko")
+
+  // 21.3 Curated Flagship Showcase Card (shown in hero)
+  showcaseBadgeLeft   String?  @default("Rekomendasi Minggu Ini")
+  showcaseBadgeRight  String?  @default("Kurasi Edisi 2026")
+  showcaseImageUrl    String?  @default("https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&auto=format&fit=crop&q=80")
+  showcaseTagPill     String?  @default("Keychron K2 Pro • Hot-Swap")
+  showcaseTitle       String?  @default("Workstation Setup Terpopuler")
+  showcaseSubtitle    String?  @default("Mekanikal keyboard & stand laptop aluminium 360°")
+  showcaseLinkText    String?  @default("Buka Detail →")
+  showcaseLinkUrl     String?  @default("/products")
+  showcaseConsultText String?  @default("Butuh panduan sebelum membeli?")
+
   updatedAt           DateTime @updatedAt
 }
 

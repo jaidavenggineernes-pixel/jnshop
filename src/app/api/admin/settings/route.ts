@@ -33,9 +33,73 @@ export async function PUT(req: Request) {
       returnPolicy,
       geminiApiKey,
       aiModel,
+      // Homepage Hero & Showcase CMS
+      heroBadge,
+      heroTitle,
+      heroSubtitle,
+      heroPrimaryBtnText,
+      heroPrimaryBtnLink,
+      heroSecondaryBtnText,
+      heroSecondaryBtnLink,
+      guarantee1Title,
+      guarantee1Desc,
+      guarantee2Title,
+      guarantee2Desc,
+      guarantee3Title,
+      guarantee3Desc,
+      showcaseBadgeLeft,
+      showcaseBadgeRight,
+      showcaseImageUrl,
+      showcaseTagPill,
+      showcaseTitle,
+      showcaseSubtitle,
+      showcaseLinkText,
+      showcaseLinkUrl,
+      showcaseConsultText,
     } = body;
 
     const cleanWhatsapp = (whatsappNumber || "").replace(/\D/g, "");
+
+    const updatePayload: any = {
+      storeName,
+      tagLine,
+      description,
+      email,
+      phone,
+      whatsappNumber: cleanWhatsapp,
+      address,
+      bannerAnnouncement,
+      termsAndConditions,
+      privacyPolicy,
+      returnPolicy,
+      geminiApiKey,
+      aiModel,
+    };
+
+    if (heroBadge !== undefined) updatePayload.heroBadge = heroBadge;
+    if (heroTitle !== undefined) updatePayload.heroTitle = heroTitle;
+    if (heroSubtitle !== undefined) updatePayload.heroSubtitle = heroSubtitle;
+    if (heroPrimaryBtnText !== undefined) updatePayload.heroPrimaryBtnText = heroPrimaryBtnText;
+    if (heroPrimaryBtnLink !== undefined) updatePayload.heroPrimaryBtnLink = heroPrimaryBtnLink;
+    if (heroSecondaryBtnText !== undefined) updatePayload.heroSecondaryBtnText = heroSecondaryBtnText;
+    if (heroSecondaryBtnLink !== undefined) updatePayload.heroSecondaryBtnLink = heroSecondaryBtnLink;
+
+    if (guarantee1Title !== undefined) updatePayload.guarantee1Title = guarantee1Title;
+    if (guarantee1Desc !== undefined) updatePayload.guarantee1Desc = guarantee1Desc;
+    if (guarantee2Title !== undefined) updatePayload.guarantee2Title = guarantee2Title;
+    if (guarantee2Desc !== undefined) updatePayload.guarantee2Desc = guarantee2Desc;
+    if (guarantee3Title !== undefined) updatePayload.guarantee3Title = guarantee3Title;
+    if (guarantee3Desc !== undefined) updatePayload.guarantee3Desc = guarantee3Desc;
+
+    if (showcaseBadgeLeft !== undefined) updatePayload.showcaseBadgeLeft = showcaseBadgeLeft;
+    if (showcaseBadgeRight !== undefined) updatePayload.showcaseBadgeRight = showcaseBadgeRight;
+    if (showcaseImageUrl !== undefined) updatePayload.showcaseImageUrl = showcaseImageUrl;
+    if (showcaseTagPill !== undefined) updatePayload.showcaseTagPill = showcaseTagPill;
+    if (showcaseTitle !== undefined) updatePayload.showcaseTitle = showcaseTitle;
+    if (showcaseSubtitle !== undefined) updatePayload.showcaseSubtitle = showcaseSubtitle;
+    if (showcaseLinkText !== undefined) updatePayload.showcaseLinkText = showcaseLinkText;
+    if (showcaseLinkUrl !== undefined) updatePayload.showcaseLinkUrl = showcaseLinkUrl;
+    if (showcaseConsultText !== undefined) updatePayload.showcaseConsultText = showcaseConsultText;
 
     const updated = await prisma.storeSetting.upsert({
       where: { id: "default" },
@@ -54,22 +118,9 @@ export async function PUT(req: Request) {
         returnPolicy: returnPolicy || null,
         geminiApiKey: geminiApiKey || null,
         aiModel: aiModel || "gemini-2.5-flash",
+        ...updatePayload,
       },
-      update: {
-        storeName,
-        tagLine,
-        description,
-        email,
-        phone,
-        whatsappNumber: cleanWhatsapp,
-        address,
-        bannerAnnouncement,
-        termsAndConditions,
-        privacyPolicy,
-        returnPolicy,
-        geminiApiKey,
-        aiModel,
-      },
+      update: updatePayload,
     });
 
     // Revalidate paths so storefront and layouts update immediately
@@ -93,6 +144,7 @@ export async function PUT(req: Request) {
           storeName,
           phone,
           whatsappNumber: cleanWhatsapp,
+          heroTitle: heroTitle?.substring(0, 50),
           aiConfigured: Boolean(geminiApiKey),
         }),
       },
@@ -101,7 +153,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({
       success: true,
       setting: updated,
-      message: "Pengaturan toko dan nomor kontak berhasil diperbarui di seluruh website.",
+      message: "Seluruh pengaturan dan konten halaman beranda toko berhasil disimpan & diperbarui secara live.",
     });
   } catch (error: any) {
     console.error("PUT store settings error:", error);

@@ -12,6 +12,7 @@ import {
   Tag,
   Settings,
   FileSpreadsheet,
+  LayoutTemplate,
   ArrowLeft,
   ExternalLink,
   Menu,
@@ -74,10 +75,16 @@ export function AdminNav({ user }: AdminNavProps) {
       isActive: pathname?.startsWith("/admin/reports"),
     },
     {
-      label: "Pengaturan Toko",
-      href: "/admin/settings",
+      label: "Konten Beranda (CMS)",
+      href: "/admin/settings?tab=hero",
+      icon: LayoutTemplate,
+      isActive: pathname === "/admin/settings",
+    },
+    {
+      label: "Pengaturan & Kontak",
+      href: "/admin/settings?tab=identity",
       icon: Settings,
-      isActive: pathname?.startsWith("/admin/settings"),
+      isActive: false,
     },
   ];
 

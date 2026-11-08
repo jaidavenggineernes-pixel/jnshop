@@ -60,9 +60,42 @@ export default async function HomePage() {
       }),
     ]);
 
+  // Dynamic Homepage Hero CMS Content
+  const heroBadge = storeSetting?.heroBadge || "Kurasi Khusus • Toko Pribadi & Digital Studio";
+  const heroTitle = storeSetting?.heroTitle || "Peralatan kerja pilihan & aset digital siap pakai, dibuat dengan rasa & dedikasi.";
+  const heroSubtitle =
+    storeSetting?.heroSubtitle ||
+    `Selamat datang di ${storeSetting?.storeName || "JNshop"}. Toko independen yang menyediakan workstation ergonomis, periferal berkualitas, dan software boilerplate yang saya uji dan pakai sendiri dalam proyek nyata.`;
+  const heroPrimaryBtnText = storeSetting?.heroPrimaryBtnText || "Lihat Seluruh Koleksi";
+  const heroPrimaryBtnLink = storeSetting?.heroPrimaryBtnLink || "/products";
+  const heroSecondaryBtnText = storeSetting?.heroSecondaryBtnText || "⚡ Produk Digital & Lisensi";
+  const heroSecondaryBtnLink = storeSetting?.heroSecondaryBtnLink || "/categories/produk-digital-lisensi";
+
+  const guarantee1Title = storeSetting?.guarantee1Title || "Garansi 7 Hari";
+  const guarantee1Desc = storeSetting?.guarantee1Desc || "Retur ganti baru / refund";
+  const guarantee2Title = storeSetting?.guarantee2Title || "0 Detik";
+  const guarantee2Desc = storeSetting?.guarantee2Desc || "Lisensi digital langsung aktif";
+  const guarantee3Title = storeSetting?.guarantee3Title || "Personal";
+  const guarantee3Desc = storeSetting?.guarantee3Desc || "Dukungan pemilik toko";
+
+  const showcaseBadgeLeft = storeSetting?.showcaseBadgeLeft || "Rekomendasi Minggu Ini";
+  const showcaseBadgeRight = storeSetting?.showcaseBadgeRight || "Kurasi Edisi 2026";
+  const showcaseImageUrl =
+    storeSetting?.showcaseImageUrl ||
+    "https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&auto=format&fit=crop&q=80";
+  const showcaseTagPill = storeSetting?.showcaseTagPill || "Keychron K2 Pro • Hot-Swap";
+  const showcaseTitle = storeSetting?.showcaseTitle || "Workstation Setup Terpopuler";
+  const showcaseSubtitle =
+    storeSetting?.showcaseSubtitle || "Mekanikal keyboard & stand laptop aluminium 360°";
+  const showcaseLinkText = storeSetting?.showcaseLinkText || "Buka Detail →";
+  const showcaseLinkUrl = storeSetting?.showcaseLinkUrl || "/products";
+  const showcaseConsultText = storeSetting?.showcaseConsultText || "Butuh panduan sebelum membeli?";
+
+  const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
+
   return (
     <div className="space-y-16 sm:space-y-24 pb-24">
-      {/* 1. EDITORIAL BOUTIQUE HERO SECTION */}
+      {/* 1. EDITORIAL BOUTIQUE HERO SECTION (FULLY EDITABLE FROM ADMIN CMS) */}
       <section className="relative overflow-hidden bg-[#f4f2ec] border-b border-stone-200/80 pt-12 pb-20 md:pt-20 md:pb-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -71,102 +104,101 @@ export default async function HomePage() {
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-200/80 border border-stone-300 text-stone-800 text-xs font-semibold">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                <span>Kurasi Khusus • Toko Pribadi & Digital Studio</span>
+                <span>{heroBadge}</span>
               </div>
 
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-stone-900 leading-[1.15]">
-                Peralatan kerja pilihan & aset digital siap pakai,{" "}
-                <span className="text-stone-500 font-normal italic">
-                  dibuat dengan rasa & dedikasi.
-                </span>
+                {heroTitle}
               </h1>
 
               <p className="text-stone-600 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-                Selamat datang di <strong>JNshop</strong>. Toko independen yang menyediakan workstation ergonomis, periferal berkualitas, dan software boilerplate yang saya uji dan pakai sendiri dalam proyek nyata.
+                {heroSubtitle}
               </p>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
                 <Link
-                  href="/products"
+                  href={heroPrimaryBtnLink}
                   className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#1c1917] hover:bg-stone-800 text-[#faf9f6] font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 group cursor-pointer"
                 >
-                  <span>Lihat Seluruh Koleksi</span>
+                  <span>{heroPrimaryBtnText}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
-                  href="/categories/produk-digital-lisensi"
+                  href={heroSecondaryBtnLink}
                   className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-semibold text-sm border border-stone-300 transition-all text-center cursor-pointer"
                 >
-                  ⚡ Produk Digital & Lisensi
+                  {heroSecondaryBtnText}
                 </Link>
               </div>
 
               {/* Genuine Human Guarantees */}
               <div className="grid grid-cols-3 gap-3 pt-6 border-t border-stone-200 text-left">
                 <div>
-                  <div className="text-lg sm:text-xl font-extrabold text-stone-900">Garansi 7 Hari</div>
-                  <div className="text-[11px] text-stone-500 leading-tight">Retur ganti baru / refund</div>
+                  <div className="text-lg sm:text-xl font-extrabold text-stone-900">{guarantee1Title}</div>
+                  <div className="text-[11px] text-stone-500 leading-tight">{guarantee1Desc}</div>
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl font-extrabold text-stone-900">0 Detik</div>
-                  <div className="text-[11px] text-stone-500 leading-tight">Lisensi digital langsung aktif</div>
+                  <div className="text-lg sm:text-xl font-extrabold text-stone-900">{guarantee2Title}</div>
+                  <div className="text-[11px] text-stone-500 leading-tight">{guarantee2Desc}</div>
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl font-extrabold text-stone-900">Personal</div>
-                  <div className="text-[11px] text-stone-500 leading-tight">Dukungan pemilik toko</div>
+                  <div className="text-lg sm:text-xl font-extrabold text-stone-900">{guarantee3Title}</div>
+                  <div className="text-[11px] text-stone-500 leading-tight">{guarantee3Desc}</div>
                 </div>
               </div>
             </div>
 
-            {/* Right Curated Flagship Showcase */}
+            {/* Right Curated Flagship Showcase (Shown in User Photo) */}
             <div className="lg:col-span-5 relative">
               <div className="bg-white p-6 rounded-3xl border border-stone-200/90 shadow-xl space-y-5">
                 <div className="flex items-center justify-between pb-3.5 border-b border-stone-100">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                     <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                      Rekomendasi Minggu Ini
+                      {showcaseBadgeLeft}
                     </span>
                   </div>
-                  <span className="text-[11px] font-semibold text-stone-400">Kurasi Edisi 2026</span>
+                  <span className="text-[11px] font-semibold text-stone-400">{showcaseBadgeRight}</span>
                 </div>
 
                 {/* Spotlight item preview */}
                 <div className="space-y-3">
                   <div className="aspect-4/3 rounded-2xl overflow-hidden bg-stone-100 relative group">
                     <img
-                      src="https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&auto=format&fit=crop&q=80"
-                      alt="Keychron K2 Pro"
+                      src={showcaseImageUrl}
+                      alt={showcaseTitle}
                       className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                     />
-                    <div className="absolute bottom-3 left-3 bg-[#1c1917]/85 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-xs font-bold">
-                      Keychron K2 Pro • Hot-Swap
-                    </div>
+                    {showcaseTagPill && (
+                      <div className="absolute bottom-3 left-3 bg-[#1c1917]/85 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-xs font-bold">
+                        {showcaseTagPill}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
                     <div>
                       <h4 className="font-bold text-sm text-stone-900">
-                        Workstation Setup Terpopuler
+                        {showcaseTitle}
                       </h4>
                       <p className="text-xs text-stone-500">
-                        Mekanikal keyboard & stand laptop aluminium 360°
+                        {showcaseSubtitle}
                       </p>
                     </div>
                     <Link
-                      href="/products"
+                      href={showcaseLinkUrl}
                       className="text-xs font-bold text-stone-800 hover:text-stone-600 underline"
                     >
-                      Buka Detail →
+                      {showcaseLinkText}
                     </Link>
                   </div>
                 </div>
 
                 <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 flex items-center justify-between text-xs">
-                  <span className="text-stone-600">Butuh panduan sebelum membeli?</span>
+                  <span className="text-stone-600">{showcaseConsultText}</span>
                   <a
-                    href={`https://wa.me/${(storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "")}?text=${encodeURIComponent(`Halo Kurator ${storeSetting?.storeName || "JNshop"}, saya ingin berkonsultasi mengenai setup & produk.`)}`}
+                    href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo Kurator ${storeSetting?.storeName || "JNshop"}, saya ingin berkonsultasi mengenai setup & produk.`)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
