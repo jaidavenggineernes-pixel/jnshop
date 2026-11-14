@@ -17,8 +17,10 @@ const EXT_BY_MIME: Record<string, string> = {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+export type UploadFolder = "proofs" | "qris" | "products";
+
 export async function saveUploadedImage(
-  folder: "proofs" | "qris",
+  folder: UploadFolder,
   prefix: string,
   file: File
 ): Promise<{ url: string; buffer: Buffer; filename: string; contentType: string }> {
@@ -95,7 +97,7 @@ export async function saveUploadedImage(
   }
 }
 
-export async function serveStorageImage(folder: "proofs" | "qris", filename: string) {
+export async function serveStorageImage(folder: UploadFolder, filename: string) {
   try {
     const safeName = path.basename(filename);
 

@@ -20,6 +20,9 @@ import {
   Pencil,
   Save,
   Binary,
+  UploadCloud,
+  Image as ImageIcon,
+  Link as LinkIcon,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/utils";
 
@@ -115,11 +118,15 @@ export default function AdminProductsClient({
   const [editDigitalFileUrl, setEditDigitalFileUrl] = useState("");
   const [editDigitalLicenseKey, setEditDigitalLicenseKey] = useState("");
   const [editImageUrl, setEditImageUrl] = useState("");
+  const [editImageMode, setEditImageMode] = useState<"upload" | "url">("upload");
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState("");
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editIsActive, setEditIsActive] = useState(true);
   const [editAllowCod, setEditAllowCod] = useState(true);
   const [editVariants, setEditVariants] = useState<{ id: string; name: string; price: string; stock: string }[]>([]);
   const [editSaving, setEditSaving] = useState(false);
+  const [editSavingStatus, setEditSavingStatus] = useState("");
   const [editError, setEditError] = useState("");
 
   useEffect(() => {
@@ -230,7 +237,11 @@ export default function AdminProductsClient({
     setEditDigitalDeliveryType(product.digitalDeliveryType || "INSTANT_DOWNLOAD");
     setEditDigitalFileUrl(product.digitalFileUrl || "");
     setEditDigitalLicenseKey(product.digitalLicenseKey || "");
-    setEditImageUrl(product.images?.[0]?.url || "");
+    const initialImg = product.images?.[0]?.url || "";
+    setEditImageUrl(initialImg);
+    setEditImagePreview(initialImg);
+    setEditImageFile(null);
+    setEditImageMode(initialImg && !initialImg.startsWith("/api/uploads/") && !initialImg.startsWith("data:") ? "url" : "upload");
     setEditIsFeatured(Boolean(product.isFeatured));
     setEditIsActive(Boolean(product.isActive));
     setEditAllowCod(Boolean(product.allowCod));
@@ -244,6 +255,36 @@ export default function AdminProductsClient({
     );
     setEditError("");
     setEditModalOpen(true);
+  };
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setEditError("Format file gambar harus JPG, PNG, atau WEBP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setEditError("Ukuran foto maksimal 5MB.");
+      return;
+    }
+
+    setEditError("");
+    setEditImageFile(file);
+    if (editImagePreview && editImagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(editImagePreview);
+    }
+    setEditImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleEditRemoveFile = () => {
+    if (editImagePreview && editImagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(editImagePreview);
+    }
+    setEditImageFile(null);
+    setEditImagePreview("");
+    setEditImageUrl("");
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
@@ -269,9 +310,36 @@ export default function AdminProductsClient({
     }
 
     setEditSaving(true);
+    setEditSavingStatus("Menyiapkan data produk...");
     setEditError("");
 
     try {
+      let finalImageUrl = editImageUrl.trim();
+
+      if (editImageMode === "upload") {
+        if (editImageFile) {
+          setEditSavingStatus("Mengunggah foto baru...");
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", editImageFile);
+
+          const uploadRes = await fetch("/api/uploads/products", {
+            method: "POST",
+            body: uploadFormData,
+          });
+
+          const uploadData = await uploadRes.json();
+          if (!uploadRes.ok) {
+            throw new Error(uploadData.error || "Gagal mengunggah foto produk.");
+          }
+          finalImageUrl = uploadData.url;
+        } else if (editImagePreview) {
+          finalImageUrl = editImagePreview;
+        } else {
+          finalImageUrl = "";
+        }
+      }
+
+      setEditSavingStatus("Menyimpan pembaruan produk...");
       const res = await fetch(`/api/admin/products/${editingProduct.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -289,7 +357,7 @@ export default function AdminProductsClient({
           digitalDeliveryType: !editIsPhysical ? editDigitalDeliveryType : null,
           digitalFileUrl: !editIsPhysical ? editDigitalFileUrl.trim() || null : null,
           digitalLicenseKey: !editIsPhysical ? editDigitalLicenseKey.trim() || null : null,
-          imageUrl: editImageUrl.trim(),
+          imageUrl: finalImageUrl,
           isFeatured: editIsFeatured,
           isActive: editIsActive,
           allowCod: editIsPhysical ? editAllowCod : false,
@@ -1087,27 +1155,145 @@ export default function AdminProductsClient({
                   />
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label htmlFor="edit-image-url" className="block font-semibold text-zinc-800 mb-1.5">
-                    URL Gambar Produk (Biarkan tetap untuk mempertahankan foto saat ini)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {editImageUrl && (
-                      <img
-                        src={editImageUrl}
-                        alt={editName || editingProduct.name}
-                        className="w-12 h-12 rounded-lg object-cover border border-zinc-200 bg-zinc-100 shrink-0"
-                      />
-                    )}
-                    <input
-                      id="edit-image-url"
-                      type="text"
-                      value={editImageUrl}
-                      onChange={(e) => setEditImageUrl(e.target.value)}
-                      placeholder="https://..."
-                      className="flex-1 min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
-                    />
+                <div className="sm:col-span-2 space-y-3 p-4 rounded-xl border border-zinc-200 bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-2.5">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-900">
+                        Foto Produk Utama
+                      </label>
+                      <p className="text-[11px] text-zinc-600">
+                        Perbarui foto produk dengan mengunggah gambar langsung dari komputer atau ponsel, atau isi tautan URL gambar.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 p-1 bg-zinc-100 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setEditImageMode("upload")}
+                        className={`min-h-[34px] px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                          editImageMode === "upload"
+                            ? "bg-white text-green-900 shadow-sm"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        <UploadCloud className="w-3.5 h-3.5 text-green-800" />
+                        <span>Unggah File Foto</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditImageMode("url")}
+                        className={`min-h-[34px] px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                          editImageMode === "url"
+                            ? "bg-white text-green-900 shadow-sm"
+                            : "text-zinc-600 hover:text-zinc-900"
+                        }`}
+                      >
+                        <LinkIcon className="w-3.5 h-3.5 text-zinc-600" />
+                        <span>Link URL</span>
+                      </button>
+                    </div>
                   </div>
+
+                  {editImageMode === "upload" ? (
+                    <div>
+                      <input
+                        id="edit-prod-file-input"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleEditFileChange}
+                        className="hidden"
+                      />
+
+                      {!editImagePreview ? (
+                        <label
+                          htmlFor="edit-prod-file-input"
+                          className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-zinc-300 hover:border-green-800 rounded-xl bg-zinc-50 hover:bg-zinc-100/70 transition-colors cursor-pointer text-center group"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-800 group-hover:scale-105 transition-transform mb-2">
+                            <UploadCloud className="w-5 h-5" />
+                          </div>
+                          <span className="text-xs font-semibold text-zinc-900">
+                            Pilih berkas foto baru dari perangkat Anda
+                          </span>
+                          <span className="text-[11px] text-zinc-600 mt-0.5">
+                            Format JPG, PNG, WEBP (Maksimal 5MB)
+                          </span>
+                        </label>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl border border-zinc-200 bg-zinc-50">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={editImagePreview}
+                              alt="Foto Produk"
+                              className="w-16 h-16 object-cover rounded-lg border border-zinc-200 bg-white shrink-0 shadow-sm"
+                            />
+                            <div>
+                              <p className="text-xs font-bold text-zinc-900 line-clamp-1">
+                                {editImageFile ? editImageFile.name : (editName || editingProduct.name)}
+                              </p>
+                              {editImageFile ? (
+                                <p className="text-[11px] text-zinc-600 mt-0.5">
+                                  File baru: {(editImageFile.size / 1024).toFixed(1)} KB (siap diunggah)
+                                </p>
+                              ) : (
+                                <p className="text-[11px] text-zinc-600 mt-0.5">
+                                  Foto produk saat ini tersimpan
+                                </p>
+                              )}
+                              <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-900 border border-green-200">
+                                <ImageIcon className="w-3 h-3 text-green-800" />
+                                {editImageFile ? "Foto baru dipilih" : "Foto aktif"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-end sm:self-center">
+                            <label
+                              htmlFor="edit-prod-file-input"
+                              className="min-h-[38px] px-3 py-1.5 rounded-lg border border-zinc-200 bg-white text-zinc-800 text-xs font-semibold hover:bg-zinc-100 cursor-pointer inline-flex items-center gap-1.5"
+                            >
+                              <UploadCloud className="w-3.5 h-3.5" />
+                              <span>Ganti Foto</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleEditRemoveFile}
+                              className="min-h-[38px] px-3 py-1.5 rounded-lg border border-red-200 bg-white text-red-700 text-xs font-semibold hover:bg-red-50 inline-flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        {editImageUrl && (
+                          <img
+                            src={editImageUrl}
+                            alt={editName || editingProduct.name}
+                            className="w-12 h-12 rounded-lg object-cover border border-zinc-200 bg-zinc-100 shrink-0"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        )}
+                        <input
+                          id="edit-image-url"
+                          type="url"
+                          value={editImageUrl}
+                          onChange={(e) => {
+                            setEditImageUrl(e.target.value);
+                            setEditImagePreview(e.target.value);
+                          }}
+                          placeholder="https://images.unsplash.com/..."
+                          className="flex-1 min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1293,7 +1479,7 @@ export default function AdminProductsClient({
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  <span>{editSaving ? "Menyimpan..." : "Simpan Perubahan Produk"}</span>
+                  <span>{editSaving ? (editSavingStatus || "Menyimpan...") : "Simpan Perubahan Produk"}</span>
                 </button>
               </div>
             </form>

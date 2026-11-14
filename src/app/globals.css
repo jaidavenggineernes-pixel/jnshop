@@ -10,6 +10,7 @@
     --color-red-200: oklch(88.5% 0.062 18.334);
     --color-red-300: oklch(80.8% 0.114 19.571);
     --color-red-400: oklch(70.4% 0.191 22.216);
+    --color-red-600: oklch(57.7% 0.245 27.325);
     --color-red-700: oklch(50.5% 0.213 27.518);
     --color-red-800: oklch(44.4% 0.177 26.899);
     --color-red-900: oklch(39.6% 0.141 25.723);
@@ -671,6 +672,9 @@
   }
   .w-64 {
     width: calc(var(--spacing) * 64);
+  }
+  .w-fit {
+    width: fit-content;
   }
   .w-full {
     width: 100%;
@@ -1601,6 +1605,9 @@
   .text-red-300 {
     color: var(--color-red-300);
   }
+  .text-red-600 {
+    color: var(--color-red-600);
+  }
   .text-red-700 {
     color: var(--color-red-700);
   }
@@ -1740,6 +1747,12 @@
       --tw-scale-z: 103%;
       scale: var(--tw-scale-x) var(--tw-scale-y);
     }
+    :is(:where(.group):hover .group-hover\:scale-105) {
+      --tw-scale-x: 105%;
+      --tw-scale-y: 105%;
+      --tw-scale-z: 105%;
+      scale: var(--tw-scale-x) var(--tw-scale-y);
+    }
     :is(:where(.group):hover .group-hover\:text-green-800) {
       color: var(--color-green-800);
     }
@@ -1843,6 +1856,14 @@
     }
     .hover\:bg-zinc-100:hover {
       background-color: var(--color-zinc-100);
+    }
+    .hover\:bg-zinc-100\/70:hover {
+      background-color: color-mix(in srgb, oklch(96.7% 0.001 286.375) 70%, transparent);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-zinc-100\/70:hover {
+        background-color: color-mix(in oklab, var(--color-zinc-100) 70%, transparent);
+      }
     }
     .hover\:bg-zinc-200:hover {
       background-color: var(--color-zinc-200);

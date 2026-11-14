@@ -11,6 +11,10 @@ import {
   Binary,
   AlertCircle,
   Lock,
+  UploadCloud,
+  Image as ImageIcon,
+  Trash2,
+  Link as LinkIcon,
 } from "lucide-react";
 
 export default function NewProductPage() {
@@ -31,11 +35,15 @@ export default function NewProductPage() {
   const [digitalLicenseKey, setDigitalLicenseKey] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageMode, setImageMode] = useState<"upload" | "url">("upload");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [allowCod, setAllowCod] = useState(true);
 
   const [generatingAI, setGeneratingAI] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingStatus, setSavingStatus] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -86,6 +94,35 @@ export default function NewProductPage() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Format file gambar harus JPG, PNG, atau WEBP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Ukuran foto maksimal 5MB.");
+      return;
+    }
+
+    setError("");
+    setImageFile(file);
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveFile = () => {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImageFile(null);
+    setImagePreview("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !price || !categoryId) {
@@ -94,9 +131,34 @@ export default function NewProductPage() {
     }
 
     setSaving(true);
+    setSavingStatus("Memvalidasi data produk...");
     setError("");
 
     try {
+      let finalImageUrl: string | null = null;
+
+      if (imageMode === "upload") {
+        if (imageFile) {
+          setSavingStatus("Mengunggah foto produk...");
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", imageFile);
+
+          const uploadRes = await fetch("/api/uploads/products", {
+            method: "POST",
+            body: uploadFormData,
+          });
+
+          const uploadData = await uploadRes.json();
+          if (!uploadRes.ok) {
+            throw new Error(uploadData.error || "Gagal mengunggah foto produk.");
+          }
+          finalImageUrl = uploadData.url;
+        }
+      } else {
+        finalImageUrl = imageUrl.trim() || null;
+      }
+
+      setSavingStatus("Menyimpan katalog produk...");
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,7 +176,7 @@ export default function NewProductPage() {
           digitalFileUrl: !isPhysical ? digitalFileUrl.trim() || null : null,
           digitalLicenseKey: !isPhysical ? digitalLicenseKey.trim() || null : null,
           categoryId,
-          imageUrl: imageUrl.trim() || null,
+          imageUrl: finalImageUrl,
           isFeatured,
           allowCod: isPhysical ? allowCod : false,
         }),
@@ -130,6 +192,7 @@ export default function NewProductPage() {
       setError(err.message || "Terjadi kesalahan.");
     } finally {
       setSaving(false);
+      setSavingStatus("");
     }
   };
 
@@ -457,27 +520,152 @@ export default function NewProductPage() {
           )}
         </div>
 
-        {/* Image & Featured */}
+        {/* Media & Tampilan Etalase */}
         <div className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 space-y-4">
-          <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
-            Media & Tampilan Etalase
-          </h2>
-
-          <div>
-            <label htmlFor="prod-img" className="block text-xs font-semibold text-zinc-800 mb-1.5">
-              URL Foto Produk Utama
-            </label>
-            <input
-              id="prod-img"
-              type="url"
-              placeholder="https://images.unsplash.com/..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
-            />
+          <div className="border-b border-zinc-200 pb-3">
+            <h2 className="font-bold text-sm text-zinc-900">
+              Media & Foto Produk
+            </h2>
+            <p className="text-xs text-zinc-600 mt-0.5">
+              Pilih cara menambahkan foto: unggah berkas langsung dari perangkat Anda atau gunakan tautan URL eksternal.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2.5 pt-1">
+          {/* Mode Switcher */}
+          <div className="flex items-center gap-2 p-1 bg-zinc-100 rounded-lg w-fit">
+            <button
+              type="button"
+              onClick={() => setImageMode("upload")}
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all ${
+                imageMode === "upload"
+                  ? "bg-white text-green-900 shadow-sm"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              <UploadCloud className="w-4 h-4 text-green-800" />
+              <span>Unggah File Foto</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setImageMode("url")}
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all ${
+                imageMode === "url"
+                  ? "bg-white text-green-900 shadow-sm"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              <LinkIcon className="w-4 h-4 text-zinc-600" />
+              <span>Gunakan Link URL</span>
+            </button>
+          </div>
+
+          {/* Direct File Upload Mode */}
+          {imageMode === "upload" ? (
+            <div>
+              <input
+                id="prod-file-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              {!imagePreview ? (
+                <label
+                  htmlFor="prod-file-input"
+                  className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-300 hover:border-green-800 rounded-xl bg-zinc-50 hover:bg-zinc-100/70 transition-colors cursor-pointer text-center group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-800 group-hover:scale-105 transition-transform mb-3">
+                    <UploadCloud className="w-6 h-6" />
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900">
+                    Klik untuk memilih foto produk
+                  </span>
+                  <span className="text-xs text-zinc-600 mt-1 max-w-sm leading-relaxed">
+                    Pilih file gambar langsung dari komputer atau ponsel Anda (Format JPG, PNG, WEBP, Maksimal 5MB)
+                  </span>
+                </label>
+              ) : (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 bg-zinc-50">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={imagePreview}
+                      alt="Preview Foto Produk"
+                      className="w-20 h-20 object-cover rounded-lg border border-zinc-200 bg-white shrink-0 shadow-sm"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900 line-clamp-1">
+                        {imageFile?.name || "Foto Berkas Terpilih"}
+                      </p>
+                      {imageFile && (
+                        <p className="text-[11px] text-zinc-600 mt-0.5">
+                          Ukuran: {(imageFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      )}
+                      <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-900 border border-green-200">
+                        <ImageIcon className="w-3 h-3 text-green-800" />
+                        Foto siap diunggah & disimpan
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <label
+                      htmlFor="prod-file-input"
+                      className="min-h-[40px] px-3.5 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-800 text-xs font-semibold hover:bg-zinc-100 cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>Ganti Foto</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="min-h-[40px] px-3.5 py-2 rounded-lg border border-red-200 bg-white text-red-700 text-xs font-semibold hover:bg-red-50 inline-flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                      <span>Hapus</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* External Image URL Mode */
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="prod-img" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                  URL Tautan Foto Produk Utama
+                </label>
+                <input
+                  id="prod-img"
+                  type="url"
+                  placeholder="https://images.unsplash.com/photo-..."
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                />
+              </div>
+
+              {imageUrl.trim().length > 10 && (
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 bg-zinc-50">
+                  <img
+                    src={imageUrl}
+                    alt="Pratinjau URL"
+                    className="w-16 h-16 object-cover rounded-md border border-zinc-200 bg-white shrink-0"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
+                  />
+                  <div className="text-xs text-zinc-700">
+                    <p className="font-semibold text-zinc-900">Pratinjau Foto URL</p>
+                    <p className="text-[11px] text-zinc-600 break-all line-clamp-1">{imageUrl}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2.5 pt-2 border-t border-zinc-100">
             <input
               type="checkbox"
               id="isFeatured"
@@ -504,7 +692,7 @@ export default function NewProductPage() {
             className="min-h-[44px] px-6 py-2.5 rounded-lg bg-green-800 hover:bg-green-900 text-white font-semibold text-xs disabled:opacity-50 transition-colors inline-flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? "Menyimpan Produk..." : "Publikasikan Produk"}</span>
+            <span>{saving ? (savingStatus || "Menyimpan Produk...") : "Publikasikan Produk"}</span>
           </button>
         </div>
       </form>

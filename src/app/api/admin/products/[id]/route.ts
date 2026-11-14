@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/auth";
+import { saveUploadedImage } from "@/lib/uploads";
 
 export async function PATCH(
   req: Request,
@@ -10,7 +11,40 @@ export async function PATCH(
   try {
     const admin = await requireAdminUser();
     const { id } = await params;
-    const body = await req.json();
+    let body: any;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      let uploadedUrl: string | null = null;
+      const file = formData.get("file") as File | null;
+      if (file && typeof file !== "string" && file.size > 0) {
+        const saved = await saveUploadedImage("products", "prod", file);
+        uploadedUrl = saved.url;
+      }
+
+      body = {};
+      const entries = Array.from(formData.entries());
+      for (const [key, val] of entries) {
+        if (key === "file") continue;
+        if (key === "isActive" || key === "isFeatured" || key === "isPhysical" || key === "allowCod") {
+          body[key] = val === "true";
+        } else if (key === "variants") {
+          try {
+            body.variants = JSON.parse(val.toString());
+          } catch {
+            body.variants = [];
+          }
+        } else {
+          body[key] = val.toString();
+        }
+      }
+      if (uploadedUrl) {
+        body.imageUrl = uploadedUrl;
+      }
+    } else {
+      body = await req.json();
+    }
 
     const existing = await prisma.product.findUnique({
       where: { id },

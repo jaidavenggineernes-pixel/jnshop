@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminUser } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
+import { saveUploadedImage } from "@/lib/uploads";
 
 export async function GET(req: Request) {
   try {
@@ -55,7 +56,39 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const admin = await requireAdminUser();
-    const body = await req.json();
+    let body: any;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      let uploadedUrl: string | null = null;
+      const file = formData.get("file") as File | null;
+      if (file && typeof file !== "string" && file.size > 0) {
+        const saved = await saveUploadedImage("products", "prod", file);
+        uploadedUrl = saved.url;
+      }
+
+      body = {
+        name: formData.get("name")?.toString() || "",
+        description: formData.get("description")?.toString() || "",
+        shortDescription: formData.get("shortDescription")?.toString() || "",
+        price: formData.get("price")?.toString() || "",
+        discountPrice: formData.get("discountPrice")?.toString() || "",
+        stock: formData.get("stock")?.toString() || "0",
+        sku: formData.get("sku")?.toString() || "",
+        weight: formData.get("weight")?.toString() || "0.5",
+        isPhysical: formData.get("isPhysical") !== "false",
+        allowCod: formData.get("allowCod") !== "false",
+        digitalDeliveryType: formData.get("digitalDeliveryType")?.toString() || null,
+        digitalFileUrl: formData.get("digitalFileUrl")?.toString() || null,
+        digitalLicenseKey: formData.get("digitalLicenseKey")?.toString() || null,
+        categoryId: formData.get("categoryId")?.toString() || "",
+        imageUrl: uploadedUrl || formData.get("imageUrl")?.toString() || null,
+        isFeatured: formData.get("isFeatured") === "true",
+      };
+    } else {
+      body = await req.json();
+    }
 
     const {
       name,
