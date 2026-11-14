@@ -8,42 +8,40 @@ import {
   Save,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
   Bot,
   Eye,
   EyeOff,
   Zap,
   ExternalLink,
-  Phone,
   MessageCircle,
-  Mail,
-  MapPin,
   Store,
   Smartphone,
   Monitor,
-  RotateCcw,
-  ShieldCheck,
-  Package,
-  Lock,
   ArrowRight,
   Split,
-  Eye as EyeIcon,
   LayoutTemplate,
   FileText,
   Sliders,
   Image as ImageIcon,
-  Check,
+  X,
+  Mail,
+  Send,
 } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const searchParams = useSearchParams();
 
-  // Navigation tab inside settings: "hero" (Konten Beranda) | "identity" (Kontak & Brand) | "ai" (Gemini AI) | "policy" (Syarat & Ketentuan)
-  const [activeTab, setActiveTab] = useState<"hero" | "identity" | "ai" | "policy">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "identity" | "ai" | "email" | "policy">("hero");
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "hero" || tabParam === "identity" || tabParam === "ai" || tabParam === "policy") {
+    if (
+      tabParam === "hero" ||
+      tabParam === "identity" ||
+      tabParam === "ai" ||
+      tabParam === "email" ||
+      tabParam === "policy"
+    ) {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
@@ -73,8 +71,26 @@ export default function AdminSettingsPage() {
     latencyMs?: number;
   } | null>(null);
 
-  // 3. Homepage Hero & Showcase CMS (Shown in User Photo)
-  const [heroBadge, setHeroBadge] = useState("Kurasi Khusus • Toko Pribadi & Digital Studio");
+  // 2b. Email & QRIS Notification Settings
+  const [adminNotificationEmail, setAdminNotificationEmail] = useState("jaidav.enggineernes@gmail.com");
+  const [smtpHost, setSmtpHost] = useState("smtp.gmail.com");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPass, setSmtpPass] = useState("");
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [emailFrom, setEmailFrom] = useState("");
+  const [resendApiKey, setResendApiKey] = useState("");
+  const [showResendKey, setShowResendKey] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    latencyMs?: number;
+  } | null>(null);
+
+  // 3. Homepage Hero & Showcase CMS
+  const [heroBadge, setHeroBadge] = useState("Kurasi Khusus | Studio Perangkat & Aset Digital");
   const [heroTitle, setHeroTitle] = useState(
     "Peralatan kerja pilihan & aset digital siap pakai, dibuat dengan rasa & dedikasi."
   );
@@ -83,10 +99,10 @@ export default function AdminSettingsPage() {
   );
   const [heroPrimaryBtnText, setHeroPrimaryBtnText] = useState("Lihat Seluruh Koleksi");
   const [heroPrimaryBtnLink, setHeroPrimaryBtnLink] = useState("/products");
-  const [heroSecondaryBtnText, setHeroSecondaryBtnText] = useState("⚡ Produk Digital & Lisensi");
+  const [heroSecondaryBtnText, setHeroSecondaryBtnText] = useState("Produk Digital & Lisensi");
   const [heroSecondaryBtnLink, setHeroSecondaryBtnLink] = useState("/categories/produk-digital-lisensi");
 
-  // 4. Trust Guarantees (3 boxes)
+  // 4. Trust Guarantees
   const [guarantee1Title, setGuarantee1Title] = useState("Garansi 7 Hari");
   const [guarantee1Desc, setGuarantee1Desc] = useState("Retur ganti baru / refund");
   const [guarantee2Title, setGuarantee2Title] = useState("0 Detik");
@@ -94,24 +110,23 @@ export default function AdminSettingsPage() {
   const [guarantee3Title, setGuarantee3Title] = useState("Personal");
   const [guarantee3Desc, setGuarantee3Desc] = useState("Dukungan pemilik toko");
 
-  // 5. Curated Flagship Showcase Card (Right box in User Photo)
+  // 5. Curated Flagship Showcase Card
   const [showcaseBadgeLeft, setShowcaseBadgeLeft] = useState("Rekomendasi Minggu Ini");
   const [showcaseBadgeRight, setShowcaseBadgeRight] = useState("Kurasi Edisi 2026");
   const [showcaseImageUrl, setShowcaseImageUrl] = useState(
     "https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&auto=format&fit=crop&q=80"
   );
-  const [showcaseTagPill, setShowcaseTagPill] = useState("Keychron K2 Pro • Hot-Swap");
+  const [showcaseTagPill, setShowcaseTagPill] = useState("Keychron K2 Pro | Hot-Swap");
   const [showcaseTitle, setShowcaseTitle] = useState("Workstation Setup Terpopuler");
   const [showcaseSubtitle, setShowcaseSubtitle] = useState(
-    "Mekanikal keyboard & stand laptop aluminium 360°"
+    "Mekanikal keyboard & stand laptop aluminium 360"
   );
-  const [showcaseLinkText, setShowcaseLinkText] = useState("Buka Detail →");
+  const [showcaseLinkText, setShowcaseLinkText] = useState("Buka Detail");
   const [showcaseLinkUrl, setShowcaseLinkUrl] = useState("/products");
   const [showcaseConsultText, setShowcaseConsultText] = useState("Butuh panduan sebelum membeli?");
 
-  // Layout View mode: "split" (both) | "form" (editor only) | "preview" (preview only)
+  // Layout controls
   const [viewMode, setViewMode] = useState<"split" | "form" | "preview">("split");
-  // Preview device: "desktop" | "mobile"
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
 
   const [loading, setLoading] = useState(true);
@@ -140,6 +155,13 @@ export default function AdminSettingsPage() {
             setReturnPolicy(s.returnPolicy || "");
             setGeminiApiKey(s.geminiApiKey || "");
             setAiModel(s.aiModel || "gemini-2.5-flash");
+            setAdminNotificationEmail(s.adminNotificationEmail || "jaidav.enggineernes@gmail.com");
+            setSmtpHost(s.smtpHost || "smtp.gmail.com");
+            setSmtpPort(s.smtpPort ? String(s.smtpPort) : "587");
+            setSmtpUser(s.smtpUser || "");
+            setSmtpPass(s.smtpPass || "");
+            setEmailFrom(s.emailFrom || "");
+            setResendApiKey(s.resendApiKey || "");
 
             if (s.heroBadge) setHeroBadge(s.heroBadge);
             if (s.heroTitle) setHeroTitle(s.heroTitle);
@@ -176,14 +198,13 @@ export default function AdminSettingsPage() {
     loadSettings();
   }, []);
 
-  // Sanitized WhatsApp numbers for live testing
   const cleanWhatsapp = useMemo(() => {
     return (whatsappNumber || "6285191219129").replace(/\D/g, "");
   }, [whatsappNumber]);
 
   const whatsappTestUrl = useMemo(() => {
     return `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(
-      `Halo Kurator ${storeName || "JNshop"}, ini adalah pesan uji koneksi WhatsApp resmi toko.`
+      `Halo Admin ${storeName || "JNshop"}, ini adalah pesan uji koneksi WhatsApp resmi toko.`
     )}`;
   }, [cleanWhatsapp, storeName]);
 
@@ -232,6 +253,49 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleTestEmail = async () => {
+    setTestingEmail(true);
+    setEmailTestResult(null);
+
+    try {
+      const res = await fetch("/api/admin/settings/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminNotificationEmail: adminNotificationEmail.trim(),
+          smtpHost: smtpHost.trim(),
+          smtpPort: smtpPort.trim(),
+          smtpUser: smtpUser.trim(),
+          smtpPass: smtpPass.trim(),
+          emailFrom: emailFrom.trim(),
+          resendApiKey: resendApiKey.trim(),
+          targetEmail: adminNotificationEmail.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEmailTestResult({
+          success: true,
+          message: data.message,
+          latencyMs: data.latencyMs,
+        });
+      } else {
+        setEmailTestResult({
+          success: false,
+          error: data.error || "Gagal mengirim email uji coba.",
+        });
+      }
+    } catch (e: any) {
+      setEmailTestResult({
+        success: false,
+        error: e.message || "Terjadi kesalahan jaringan saat menguji email.",
+      });
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -256,7 +320,13 @@ export default function AdminSettingsPage() {
           returnPolicy,
           geminiApiKey: geminiApiKey.trim(),
           aiModel,
-          // Homepage Hero & Showcase CMS
+          adminNotificationEmail: adminNotificationEmail.trim(),
+          smtpHost: smtpHost.trim(),
+          smtpPort: smtpPort.trim(),
+          smtpUser: smtpUser.trim(),
+          smtpPass: smtpPass.trim(),
+          emailFrom: emailFrom.trim(),
+          resendApiKey: resendApiKey.trim(),
           heroBadge,
           heroTitle,
           heroSubtitle,
@@ -298,8 +368,8 @@ export default function AdminSettingsPage() {
 
   if (loading) {
     return (
-      <div className="p-16 text-center text-xs text-stone-400">
-        <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-800 rounded-full animate-spin mx-auto mb-3" />
+      <div className="p-16 text-center text-xs text-zinc-600">
+        <div className="w-8 h-8 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin mx-auto mb-3" />
         <span>Memuat pengaturan lengkap dan modul CMS toko...</span>
       </div>
     );
@@ -308,135 +378,151 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6 pb-20">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-stone-200/90 pb-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-xs font-semibold text-green-800 uppercase tracking-wider">
             <Sliders className="w-3.5 h-3.5" />
-            <span>Pusat Kendali Konten Toko (CMS & Settings)</span>
+            <span>Pusat Kendali Konten Toko (CMS & Pengaturan)</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight font-serif mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1">
             Manajemen Konten & Tampilan Website
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Ubah headline hero banner, rekomendasi produk unggulan, tombol aksi, kontak WhatsApp, hingga teks garansi tanpa perlu membuka kode program.
+          <p className="text-xs sm:text-sm text-zinc-600 mt-1">
+            Ubah headline beranda, produk rekomendasi unggulan, tombol aksi, kontak WhatsApp, hingga teks jaminan tanpa membuka kode program.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/"
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold shadow-xs transition-colors"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900 text-xs font-semibold transition-colors"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
-            <span>Buka Toko Asli (Tab Baru)</span>
+            <ExternalLink className="w-3.5 h-3.5 text-zinc-600" />
+            <span>Buka Toko Publik</span>
           </Link>
 
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold shadow-sm disabled:opacity-50 transition-all cursor-pointer"
+            className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-green-800 hover:bg-green-900 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? "Menyimpan ke Seluruh Website..." : "Simpan Perubahan"}</span>
+            <span>{saving ? "Menyimpan..." : "Simpan Perubahan"}</span>
           </button>
         </div>
       </div>
 
       {/* Alert Banners */}
       {success && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between shadow-xs animate-in fade-in">
+        <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-900 text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-green-800 shrink-0" />
             <div>
-              <p className="font-bold">Semua Perubahan Berhasil Disimpan & Live!</p>
-              <p className="text-[11px] text-emerald-700 mt-0.5">
-                Konten banner beranda, produk unggulan, teks garansi, dan kontak WhatsApp telah diperbarui langsung di halaman publik toko.
+              <p className="font-bold">Semua Perubahan Berhasil Disimpan</p>
+              <p className="text-[11px] text-green-800 mt-0.5">
+                Konten beranda, kartu rekomendasi, teks jaminan, dan kontak WhatsApp telah diperbarui di halaman publik toko.
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setSuccess(false)}
-            className="text-stone-400 hover:text-stone-700 text-xs font-bold"
+            aria-label="Tutup pesan sukses"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 hover:text-zinc-900"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-center gap-2.5 shadow-xs">
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs flex items-center gap-2.5">
+          <AlertCircle className="w-5 h-5 text-red-800 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Primary Category Tabs: Hero CMS / Identity / AI / Policies */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-stone-200/90 shadow-xs">
+      {/* Primary Category Tabs + View Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-xl border border-zinc-200">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             onClick={() => setActiveTab("hero")}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
               activeTab === "hero"
-                ? "bg-stone-900 text-white shadow-xs"
-                : "bg-stone-50 hover:bg-stone-100 text-stone-600 hover:text-stone-900"
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-900"
             }`}
           >
-            <LayoutTemplate className="w-4 h-4 text-amber-400" />
-            <span>1. Konten Beranda & Hero Banner (CMS)</span>
+            <LayoutTemplate className="w-4 h-4" />
+            <span>1. Konten Beranda & Banner</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("identity")}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
               activeTab === "identity"
-                ? "bg-stone-900 text-white shadow-xs"
-                : "bg-stone-50 hover:bg-stone-100 text-stone-600 hover:text-stone-900"
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-900"
             }`}
           >
-            <Store className="w-4 h-4 text-emerald-400" />
-            <span>2. Identitas Brand & Kontak WhatsApp</span>
+            <Store className="w-4 h-4" />
+            <span>2. Identitas & Kontak WhatsApp</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("ai")}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
               activeTab === "ai"
-                ? "bg-stone-900 text-white shadow-xs"
-                : "bg-stone-50 hover:bg-stone-100 text-stone-600 hover:text-stone-900"
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-900"
             }`}
           >
-            <Sparkles className="w-4 h-4 text-indigo-400" />
-            <span>3. Google Gemini AI</span>
+            <Bot className="w-4 h-4" />
+            <span>3. Asisten Gemini AI</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("policy")}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
               activeTab === "policy"
-                ? "bg-stone-900 text-white shadow-xs"
-                : "bg-stone-50 hover:bg-stone-100 text-stone-600 hover:text-stone-900"
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-900"
             }`}
           >
-            <FileText className="w-4 h-4 text-stone-400" />
-            <span>4. Kebijakan & Ketentuan Layanan</span>
+            <FileText className="w-4 h-4" />
+            <span>4. Kebijakan & Retur</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("email")}
+            className={`min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+              activeTab === "email"
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-900"
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            <span>5. Email & Notifikasi QRIS</span>
           </button>
         </div>
 
         {/* View Mode & Device Toggle */}
         <div className="flex items-center gap-2 ml-auto">
-          <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl text-xs">
+          <div className="flex items-center gap-1 p-1 bg-zinc-100 rounded-lg text-xs">
             <button
               type="button"
               onClick={() => setViewMode("split")}
-              className={`p-1.5 rounded-lg transition-all flex items-center gap-1 ${
+              className={`min-h-[36px] px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
                 viewMode === "split"
-                  ? "bg-white text-stone-900 font-bold shadow-xs"
-                  : "text-stone-500 hover:text-stone-800"
+                  ? "bg-white text-zinc-900 font-bold"
+                  : "text-zinc-600 hover:text-zinc-900"
               }`}
               title="Editor & Pratinjau Berdampingan"
             >
@@ -446,10 +532,10 @@ export default function AdminSettingsPage() {
             <button
               type="button"
               onClick={() => setViewMode("form")}
-              className={`p-1.5 rounded-lg transition-all flex items-center gap-1 ${
+              className={`min-h-[36px] px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
                 viewMode === "form"
-                  ? "bg-white text-stone-900 font-bold shadow-xs"
-                  : "text-stone-500 hover:text-stone-800"
+                  ? "bg-white text-zinc-900 font-bold"
+                  : "text-zinc-600 hover:text-zinc-900"
               }`}
               title="Formulir Editor Saja"
             >
@@ -459,100 +545,97 @@ export default function AdminSettingsPage() {
             <button
               type="button"
               onClick={() => setViewMode("preview")}
-              className={`p-1.5 rounded-lg transition-all flex items-center gap-1 ${
+              className={`min-h-[36px] px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
                 viewMode === "preview"
-                  ? "bg-white text-stone-900 font-bold shadow-xs"
-                  : "text-stone-500 hover:text-stone-800"
+                  ? "bg-white text-zinc-900 font-bold"
+                  : "text-zinc-600 hover:text-zinc-900"
               }`}
               title="Layar Pratinjau Penuh"
             >
-              <EyeIcon className="w-3.5 h-3.5" />
+              <Eye className="w-3.5 h-3.5" />
               <span className="hidden sm:inline text-[11px]">Preview</span>
             </button>
           </div>
 
           {viewMode !== "form" && (
-            <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl text-xs">
+            <div className="flex items-center gap-1 p-1 bg-zinc-100 rounded-lg text-xs">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("desktop")}
-                className={`p-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                aria-label="Mode pratinjau desktop"
+                className={`w-9 h-9 rounded-md transition-colors flex items-center justify-center ${
                   previewDevice === "desktop"
-                    ? "bg-white text-stone-900 font-bold shadow-xs"
-                    : "text-stone-500 hover:text-stone-800"
+                    ? "bg-white text-zinc-900 font-bold"
+                    : "text-zinc-600 hover:text-zinc-900"
                 }`}
-                title="Layar Komputer Desktop"
               >
-                <Monitor className="w-3.5 h-3.5" />
+                <Monitor className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
-                className={`p-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                aria-label="Mode pratinjau mobile"
+                className={`w-9 h-9 rounded-md transition-colors flex items-center justify-center ${
                   previewDevice === "mobile"
-                    ? "bg-white text-stone-900 font-bold shadow-xs"
-                    : "text-stone-500 hover:text-stone-800"
+                    ? "bg-white text-zinc-900 font-bold"
+                    : "text-zinc-600 hover:text-zinc-900"
                 }`}
-                title="Layar Smartphone Mobile"
               >
-                <Smartphone className="w-3.5 h-3.5" />
+                <Smartphone className="w-4 h-4" />
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Main Grid: Left Editor + Right Live Preview */}
+      {/* Main Grid: Editor + Live Preview */}
       <div
         className={`grid gap-6 ${
-          viewMode === "split"
-            ? "grid-cols-1 xl:grid-cols-12 items-start"
-            : "grid-cols-1"
+          viewMode === "split" ? "grid-cols-1 xl:grid-cols-12 items-start" : "grid-cols-1"
         }`}
       >
-        {/* LEFT COLUMN: THE COMPREHENSIVE FORM EDITOR */}
+        {/* LEFT COLUMN: FORM EDITOR */}
         {viewMode !== "preview" && (
           <form
             onSubmit={handleSave}
             className={`space-y-6 text-xs ${
-              viewMode === "split" ? "xl:col-span-6" : "max-w-4xl mx-auto"
+              viewMode === "split" ? "xl:col-span-6" : "max-w-4xl mx-auto w-full"
             }`}
           >
-            {/* TAB 1: HOMEPAGE HERO CMS (AS SHOWN IN USER PHOTO) */}
+            {/* TAB 1: HOMEPAGE HERO CMS */}
             {activeTab === "hero" && (
-              <div className="space-y-6 animate-in fade-in">
-                {/* 1.1 Headline & Main Narrative */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
                     <div className="flex items-center gap-2">
-                      <LayoutTemplate className="w-4 h-4 text-amber-600" />
-                      <h2 className="font-bold text-sm text-stone-900 font-serif">
-                        Teks Judul & Narasi Utama Beranda
+                      <LayoutTemplate className="w-4 h-4 text-green-800" />
+                      <h2 className="font-bold text-sm text-zinc-900">
+                        Judul & Narasi Utama Beranda
                       </h2>
                     </div>
-                    <span className="text-[10px] text-stone-400 font-medium">
-                      Elemen Kiri Banner Utama
+                    <span className="text-[11px] text-zinc-600 font-medium">
+                      Kolom Kiri Hero
                     </span>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1">
-                      Label Badge Atas (Pill Tag)
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      Label Atas Pendek (Kicker)
                     </label>
                     <input
                       type="text"
                       value={heroBadge}
                       onChange={(e) => setHeroBadge(e.target.value)}
-                      placeholder="Contoh: Kurasi Khusus • Toko Pribadi & Digital Studio"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 font-medium"
+                      placeholder="Contoh: Kurasi Khusus | Studio Perangkat & Aset Digital"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30 font-medium"
                     />
-                    <p className="text-[10px] text-stone-400 mt-1">
-                      Teks dengan titik indikator kecil di atas judul utama.
+                    <p className="text-[11px] text-zinc-600 mt-1">
+                      Teks pengantar singkat di atas judul utama beranda.
                     </p>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1">
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
                       Headline Utama (Judul Besar) *
                     </label>
                     <textarea
@@ -560,42 +643,38 @@ export default function AdminSettingsPage() {
                       required
                       value={heroTitle}
                       onChange={(e) => setHeroTitle(e.target.value)}
-                      placeholder="Contoh: Peralatan kerja pilihan & aset digital siap pakai, dibuat dengan rasa & dedikasi."
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 font-serif font-bold text-stone-900 leading-snug"
+                      placeholder="Contoh: Peralatan kerja pilihan & aset digital siap pakai..."
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30 font-bold text-zinc-900 leading-snug"
                     />
-                    <p className="text-[10px] text-stone-400 mt-1">
-                      Teks paling mencolok yang pertama kali dibaca oleh pembeli saat membuka website.
-                    </p>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1">
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
                       Paragraf Narasi / Penjelasan Toko
                     </label>
                     <textarea
                       rows={3}
                       value={heroSubtitle}
                       onChange={(e) => setHeroSubtitle(e.target.value)}
-                      placeholder="Selamat datang di JNshop. Toko independen yang menyediakan workstation ergonomis..."
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 leading-relaxed text-stone-700"
+                      placeholder="Selamat datang di JNshop..."
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30 leading-relaxed text-zinc-800"
                     />
                   </div>
                 </div>
 
-                {/* 1.2 Call to Action Buttons */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <h2 className="font-bold text-sm text-stone-900 font-serif border-b border-stone-100 pb-3">
+                {/* Call to Action Buttons */}
+                <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                  <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
                     Tombol Aksi Banner (Call-to-Action)
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-3 p-3.5 bg-stone-50/70 rounded-2xl border border-stone-200/60">
-                      <div className="text-[11px] font-bold text-stone-800 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-stone-900" />
-                        <span>Tombol Utama (Hitam Gelap)</span>
+                    <div className="space-y-3 p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
+                      <div className="text-[11px] font-bold text-zinc-900">
+                        Tombol Utama (Solid Gelap)
                       </div>
                       <div>
-                        <label className="block font-medium text-stone-600 mb-1 text-[11px]">
+                        <label className="block font-medium text-zinc-700 mb-1 text-[11px]">
                           Teks Tombol
                         </label>
                         <input
@@ -603,11 +682,11 @@ export default function AdminSettingsPage() {
                           value={heroPrimaryBtnText}
                           onChange={(e) => setHeroPrimaryBtnText(e.target.value)}
                           placeholder="Lihat Seluruh Koleksi"
-                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-stone-400"
+                          className="w-full min-h-[40px] bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-xs text-zinc-900 focus:ring-2 focus:ring-green-800/30"
                         />
                       </div>
                       <div>
-                        <label className="block font-medium text-stone-600 mb-1 text-[11px]">
+                        <label className="block font-medium text-zinc-700 mb-1 text-[11px]">
                           URL Link Tujuan
                         </label>
                         <input
@@ -615,30 +694,29 @@ export default function AdminSettingsPage() {
                           value={heroPrimaryBtnLink}
                           onChange={(e) => setHeroPrimaryBtnLink(e.target.value)}
                           placeholder="/products"
-                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs font-mono focus:ring-2 focus:ring-stone-400"
+                          className="w-full min-h-[40px] bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-xs font-mono text-zinc-900 focus:ring-2 focus:ring-green-800/30"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-3 p-3.5 bg-stone-50/70 rounded-2xl border border-stone-200/60">
-                      <div className="text-[11px] font-bold text-stone-800 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-white border border-stone-400" />
-                        <span>Tombol Kedua (Putih Border)</span>
+                    <div className="space-y-3 p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
+                      <div className="text-[11px] font-bold text-zinc-900">
+                        Tombol Kedua (Putih Border)
                       </div>
                       <div>
-                        <label className="block font-medium text-stone-600 mb-1 text-[11px]">
+                        <label className="block font-medium text-zinc-700 mb-1 text-[11px]">
                           Teks Tombol
                         </label>
                         <input
                           type="text"
                           value={heroSecondaryBtnText}
                           onChange={(e) => setHeroSecondaryBtnText(e.target.value)}
-                          placeholder="⚡ Produk Digital & Lisensi"
-                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-stone-400"
+                          placeholder="Produk Digital & Lisensi"
+                          className="w-full min-h-[40px] bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-xs text-zinc-900 focus:ring-2 focus:ring-green-800/30"
                         />
                       </div>
                       <div>
-                        <label className="block font-medium text-stone-600 mb-1 text-[11px]">
+                        <label className="block font-medium text-zinc-700 mb-1 text-[11px]">
                           URL Link Tujuan
                         </label>
                         <input
@@ -646,124 +724,121 @@ export default function AdminSettingsPage() {
                           value={heroSecondaryBtnLink}
                           onChange={(e) => setHeroSecondaryBtnLink(e.target.value)}
                           placeholder="/categories/produk-digital-lisensi"
-                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs font-mono focus:ring-2 focus:ring-stone-400"
+                          className="w-full min-h-[40px] bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-xs font-mono text-zinc-900 focus:ring-2 focus:ring-green-800/30"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 1.3 Trust Guarantees (3 Boxes at bottom of Hero) */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-                    <h2 className="font-bold text-sm text-stone-900 font-serif">
+                {/* Trust Guarantees */}
+                <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                    <h2 className="font-bold text-sm text-zinc-900">
                       3 Poin Jaminan & Kepercayaan Toko
                     </h2>
-                    <span className="text-[10px] text-stone-400">
-                      Terletak di bawah tombol banner
+                    <span className="text-[11px] text-zinc-600">
+                      Ditampilkan di bawah tombol banner
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-2">
-                      <span className="font-bold text-stone-700 text-[11px]">Kotak 1</span>
+                    <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
+                      <span className="font-bold text-zinc-800 text-[11px]">Poin 1</span>
                       <input
                         type="text"
                         value={guarantee1Title}
                         onChange={(e) => setGuarantee1Title(e.target.value)}
                         placeholder="Garansi 7 Hari"
-                        className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs font-bold"
+                        className="w-full min-h-[38px] bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-zinc-900"
                       />
                       <input
                         type="text"
                         value={guarantee1Desc}
                         onChange={(e) => setGuarantee1Desc(e.target.value)}
                         placeholder="Retur ganti baru / refund"
-                        className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1 text-[11px] text-stone-500"
+                        className="w-full min-h-[36px] bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-[11px] text-zinc-700"
                       />
                     </div>
 
-                    <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-2">
-                      <span className="font-bold text-stone-700 text-[11px]">Kotak 2</span>
+                    <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
+                      <span className="font-bold text-zinc-800 text-[11px]">Poin 2</span>
                       <input
                         type="text"
                         value={guarantee2Title}
                         onChange={(e) => setGuarantee2Title(e.target.value)}
                         placeholder="0 Detik"
-                        className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs font-bold"
+                        className="w-full min-h-[38px] bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-zinc-900"
                       />
                       <input
                         type="text"
                         value={guarantee2Desc}
                         onChange={(e) => setGuarantee2Desc(e.target.value)}
                         placeholder="Lisensi digital langsung aktif"
-                        className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1 text-[11px] text-stone-500"
+                        className="w-full min-h-[36px] bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-[11px] text-zinc-700"
                       />
                     </div>
 
-                    <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-2">
-                      <span className="font-bold text-stone-700 text-[11px]">Kotak 3</span>
+                    <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
+                      <span className="font-bold text-zinc-800 text-[11px]">Poin 3</span>
                       <input
                         type="text"
                         value={guarantee3Title}
                         onChange={(e) => setGuarantee3Title(e.target.value)}
                         placeholder="Personal"
-                        className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs font-bold"
+                        className="w-full min-h-[38px] bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-zinc-900"
                       />
                       <input
                         type="text"
                         value={guarantee3Desc}
                         onChange={(e) => setGuarantee3Desc(e.target.value)}
                         placeholder="Dukungan pemilik toko"
-                        className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1 text-[11px] text-stone-500"
+                        className="w-full min-h-[36px] bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-[11px] text-zinc-700"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* 1.4 Curated Flagship Showcase Card (The Card on the Right of Photo) */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                {/* Curated Flagship Showcase Card */}
+                <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
                     <div className="flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 text-emerald-600" />
-                      <h2 className="font-bold text-sm text-stone-900 font-serif">
-                        Kartu Produk Rekomendasi Unggulan (Kanan Banner)
+                      <ImageIcon className="w-4 h-4 text-green-800" />
+                      <h2 className="font-bold text-sm text-zinc-900">
+                        Kartu Rekomendasi Unggulan (Kanan Banner)
                       </h2>
                     </div>
-                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
-                      Sesuai Foto Unggahan Anda
-                    </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
-                        Badge Header Kiri (Dot Hijau)
+                      <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
+                        Label Header Kiri
                       </label>
                       <input
                         type="text"
                         value={showcaseBadgeLeft}
                         onChange={(e) => setShowcaseBadgeLeft(e.target.value)}
                         placeholder="Rekomendasi Minggu Ini"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs"
+                        className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
-                        Badge Header Kanan
+                      <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
+                        Label Header Kanan
                       </label>
                       <input
                         type="text"
                         value={showcaseBadgeRight}
                         onChange={(e) => setShowcaseBadgeRight(e.target.value)}
                         placeholder="Kurasi Edisi 2026"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs"
+                        className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
+                    <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
                       URL Gambar Foto Produk Unggulan
                     </label>
                     <input
@@ -771,10 +846,10 @@ export default function AdminSettingsPage() {
                       value={showcaseImageUrl}
                       onChange={(e) => setShowcaseImageUrl(e.target.value)}
                       placeholder="https://images.unsplash.com/..."
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs font-mono"
+                      className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs font-mono text-zinc-900"
                     />
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-[10px] text-stone-400">Preset Foto Cepat:</span>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="text-[11px] text-zinc-600">Preset Foto Cepat:</span>
                       <button
                         type="button"
                         onClick={() =>
@@ -782,7 +857,7 @@ export default function AdminSettingsPage() {
                             "https://images.unsplash.com/photo-1595225476474-87563907a212?w=800&auto=format&fit=crop&q=80"
                           )
                         }
-                        className="text-[10px] px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700"
+                        className="min-h-[32px] text-[11px] px-2.5 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium"
                       >
                         Keyboard Mekanikal
                       </button>
@@ -793,7 +868,7 @@ export default function AdminSettingsPage() {
                             "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80"
                           )
                         }
-                        className="text-[10px] px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700"
+                        className="min-h-[32px] text-[11px] px-2.5 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium"
                       >
                         Stand Laptop
                       </button>
@@ -802,20 +877,20 @@ export default function AdminSettingsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
-                        Tag Pill di Atas Foto
+                      <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
+                        Caption Produk di Kartu
                       </label>
                       <input
                         type="text"
                         value={showcaseTagPill}
                         onChange={(e) => setShowcaseTagPill(e.target.value)}
-                        placeholder="Keychron K2 Pro • Hot-Swap"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs"
+                        placeholder="Keychron K2 Pro | Hot-Swap"
+                        className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
+                      <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
                         Judul Produk Kartu
                       </label>
                       <input
@@ -823,39 +898,39 @@ export default function AdminSettingsPage() {
                         value={showcaseTitle}
                         onChange={(e) => setShowcaseTitle(e.target.value)}
                         placeholder="Workstation Setup Terpopuler"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs font-bold"
+                        className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs font-bold text-zinc-900"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
-                      Deskripsi / Subtitle Kartu
+                    <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
+                      Subtitle Kartu
                     </label>
                     <input
                       type="text"
                       value={showcaseSubtitle}
                       onChange={(e) => setShowcaseSubtitle(e.target.value)}
-                      placeholder="Mekanikal keyboard & stand laptop aluminium 360°"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs"
+                      placeholder="Mekanikal keyboard & stand laptop aluminium 360"
+                      className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
+                      <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
                         Teks Tombol Link
                       </label>
                       <input
                         type="text"
                         value={showcaseLinkText}
                         onChange={(e) => setShowcaseLinkText(e.target.value)}
-                        placeholder="Buka Detail →"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs"
+                        placeholder="Buka Detail"
+                        className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
+                      <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
                         URL Tujuan Link
                       </label>
                       <input
@@ -863,21 +938,21 @@ export default function AdminSettingsPage() {
                         value={showcaseLinkUrl}
                         onChange={(e) => setShowcaseLinkUrl(e.target.value)}
                         placeholder="/products"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs font-mono"
+                        className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs font-mono text-zinc-900"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1 text-[11px]">
-                      Teks Kotak Tanya Owner
+                    <label className="block font-semibold text-zinc-800 mb-1 text-[11px]">
+                      Teks Kotak Konsultasi WhatsApp
                     </label>
                     <input
                       type="text"
                       value={showcaseConsultText}
                       onChange={(e) => setShowcaseConsultText(e.target.value)}
                       placeholder="Butuh panduan sebelum membeli?"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs"
+                      className="w-full min-h-[40px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                     />
                   </div>
                 </div>
@@ -886,16 +961,15 @@ export default function AdminSettingsPage() {
 
             {/* TAB 2: BRAND IDENTITY & WHATSAPP CONTACTS */}
             {activeTab === "identity" && (
-              <div className="space-y-6 animate-in fade-in">
-                {/* Brand Info */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <h2 className="font-bold text-sm text-stone-900 font-serif border-b border-stone-100 pb-3">
+              <div className="space-y-6">
+                <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                  <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
                     Identitas Brand Toko
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-stone-700 mb-1">
+                      <label className="block font-semibold text-zinc-800 mb-1.5">
                         Nama Toko *
                       </label>
                       <input
@@ -904,54 +978,54 @@ export default function AdminSettingsPage() {
                         value={storeName}
                         onChange={(e) => setStoreName(e.target.value)}
                         placeholder="Contoh: JNshop"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-stone-700 mb-1">
+                      <label className="block font-semibold text-zinc-800 mb-1.5">
                         Tagline Toko
                       </label>
                       <input
                         type="text"
                         value={tagLine}
                         onChange={(e) => setTagLine(e.target.value)}
-                        placeholder="Contoh: Toko Online Pribadi Terpercaya"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                        placeholder="Contoh: Perangkat Kerja & Produk Digital"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-700 mb-1">
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
                       Deskripsi Toko di Footer
                     </label>
                     <textarea
                       rows={2}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                     />
                   </div>
                 </div>
 
                 {/* WhatsApp & Contact */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <div className="border-b border-stone-100 pb-3">
+                <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                  <div className="border-b border-zinc-200 pb-3">
                     <div className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4 text-emerald-600" />
-                      <h2 className="font-bold text-sm text-stone-900 font-serif">
+                      <MessageCircle className="w-4 h-4 text-green-800" />
+                      <h2 className="font-bold text-sm text-zinc-900">
                         Kontak WhatsApp & Saluran Komunikasi
                       </h2>
                     </div>
-                    <p className="text-[11px] text-stone-500 mt-0.5">
-                      Nomor ini diterapkan ke tombol WhatsApp floating, header, footer, dan invoice pesanan.
+                    <p className="text-[11px] text-zinc-600 mt-1">
+                      Nomor ini diterapkan ke tombol konsultasi beranda, footer, konfirmasi QRIS, dan invoice pesanan.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1">
-                        WhatsApp Admin / Kurator *
+                      <label className="block font-semibold text-zinc-800 mb-1.5">
+                        WhatsApp Admin / Pemilik *
                       </label>
                       <div className="relative">
                         <input
@@ -960,19 +1034,19 @@ export default function AdminSettingsPage() {
                           value={whatsappNumber}
                           onChange={(e) => setWhatsappNumber(e.target.value)}
                           placeholder="6285191219129"
-                          className="w-full bg-emerald-50/40 border border-emerald-300 text-stone-900 rounded-xl pl-3.5 pr-20 py-2.5 text-xs font-mono font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          className="w-full min-h-[44px] bg-green-50 border border-green-300 text-zinc-900 rounded-lg pl-3.5 pr-20 py-2 text-xs font-mono font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-green-800 bg-green-100 px-1.5 py-0.5 rounded">
                           WA Aktif
                         </span>
                       </div>
-                      <p className="text-[10px] text-stone-400 mt-1">
+                      <p className="text-[11px] text-zinc-600 mt-1">
                         Format internasional tanpa spasi/plus (contoh: <strong>6285191219129</strong>).
                       </p>
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1">
+                      <label className="block font-semibold text-zinc-800 mb-1.5">
                         Nomor Telepon Tampilan
                       </label>
                       <input
@@ -980,14 +1054,14 @@ export default function AdminSettingsPage() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+62 851-9121-9129"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1">
+                      <label className="block font-semibold text-zinc-800 mb-1.5">
                         Email Resmi Toko
                       </label>
                       <input
@@ -995,34 +1069,34 @@ export default function AdminSettingsPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="owner@jnshop.com"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-stone-800 mb-1">
-                        Alamat Fisik / Workshop
+                      <label className="block font-semibold text-zinc-800 mb-1.5">
+                        Alamat Fisik / Studio
                       </label>
                       <input
                         type="text"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="Jakarta Selatan, DKI Jakarta"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-stone-800 mb-1">
-                      Banner Pengumuman Atas (Announcement Bar)
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      Banner Pengumuman Atas
                     </label>
                     <input
                       type="text"
                       value={bannerAnnouncement}
                       onChange={(e) => setBannerAnnouncement(e.target.value)}
-                      placeholder="🎉 PROMO: Gunakan voucher JNSHOPNEW untuk diskon 15%!"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                      placeholder="PROMO: Gunakan voucher JNSHOPNEW untuk diskon 15%!"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                     />
                   </div>
                 </div>
@@ -1031,421 +1105,581 @@ export default function AdminSettingsPage() {
 
             {/* TAB 3: GOOGLE GEMINI AI */}
             {activeTab === "ai" && (
-              <div className="space-y-6 animate-in fade-in">
-                <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-stone-950 text-white rounded-3xl p-6 sm:p-7 shadow-lg border border-indigo-800/40 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-800/60 pb-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-400 to-indigo-500 flex items-center justify-center shadow-md">
-                        <Sparkles className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="font-bold text-sm text-white flex items-center gap-2">
-                          <span>Google Gemini AI</span>
-                          <span
-                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                              geminiApiKey
-                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30"
-                                : "bg-amber-500/20 text-amber-300 border border-amber-400/30"
-                            }`}
-                          >
-                            {geminiApiKey ? "🟢 Gemini Cloud Aktif" : "🟡 Mesin Cerdas Aktif"}
-                          </span>
-                        </h2>
-                        <p className="text-[10px] text-indigo-200">
-                          Menggerakkan asisten belanja interaktif real-time di etalase toko.
-                        </p>
-                      </div>
+              <div className="bg-zinc-900 text-white rounded-xl p-6 border border-zinc-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-800 flex items-center justify-center shrink-0">
+                      <Bot className="w-5 h-5 text-white" />
                     </div>
-
-                    <a
-                      href="https://aistudio.google.com/app/apikey"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold transition-all border border-white/10 shrink-0"
-                    >
-                      <span>Free Gemini Key</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    <div>
+                      <h2 className="font-bold text-sm text-white flex flex-wrap items-center gap-2">
+                        <span>Google Gemini AI</span>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                            geminiApiKey
+                              ? "bg-green-900/50 text-green-300 border-green-700"
+                              : "bg-zinc-800 text-zinc-300 border-zinc-700"
+                          }`}
+                        >
+                          {geminiApiKey ? "Gemini Cloud Aktif" : "Mode Katalog Lokal"}
+                        </span>
+                      </h2>
+                      <p className="text-xs text-zinc-300">
+                        Menggerakkan asisten Tanya Produk di etalase dan pembuatan deskripsi produk.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="block font-semibold text-indigo-100 text-[11px]">
-                        Google Gemini API Key
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showApiKey ? "text" : "password"}
-                          value={geminiApiKey}
-                          onChange={(e) => setGeminiApiKey(e.target.value)}
-                          placeholder="AIzaSy..."
-                          className="w-full bg-indigo-950/70 border border-indigo-700/70 rounded-xl pl-3 pr-10 py-2 text-xs text-white placeholder:text-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 font-mono"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowApiKey(!showApiKey)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-white"
-                        >
-                          {showApiKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
-                    </div>
+                  <a
+                    href="https://aistudio.google.com/app/apikey"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="min-h-[38px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-semibold transition-colors border border-zinc-700 shrink-0"
+                  >
+                    <span>Dapatkan Gemini Key</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="block font-semibold text-indigo-100 text-[11px]">
-                          Model AI
-                        </label>
-                        <select
-                          value={aiModel}
-                          onChange={(e) => setAiModel(e.target.value)}
-                          className="w-full bg-indigo-950/70 border border-indigo-700/70 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                        >
-                          <option value="gemini-2.5-flash">Gemini 2.5 Flash (Cepat & Cerdas)</option>
-                          <option value="gemini-1.5-flash">Gemini 1.5 Flash (Stabil)</option>
-                          <option value="gemini-1.5-pro">Gemini 1.5 Pro (Penalaran Berat)</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-end">
-                        <button
-                          type="button"
-                          onClick={handleTestAi}
-                          disabled={testingAi || !geminiApiKey.trim()}
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-bold text-xs transition-all shadow-sm"
-                        >
-                          <Zap className={`w-3.5 h-3.5 ${testingAi ? "animate-spin" : ""}`} />
-                          <span>{testingAi ? "Menguji..." : "Uji Koneksi Gemini"}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {aiTestResult && (
-                      <div
-                        className={`p-2.5 rounded-xl text-[11px] flex items-center gap-2 ${
-                          aiTestResult.success
-                            ? "bg-emerald-500/20 border border-emerald-400/40 text-emerald-200"
-                            : "bg-rose-500/20 border border-rose-400/40 text-rose-200"
-                        }`}
+                <div className="space-y-3">
+                  <div>
+                    <label className="block font-semibold text-zinc-200 text-xs mb-1.5">
+                      Google Gemini API Key
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showApiKey ? "text" : "password"}
+                        value={geminiApiKey}
+                        onChange={(e) => setGeminiApiKey(e.target.value)}
+                        placeholder="AIzaSy..."
+                        className="w-full min-h-[44px] bg-zinc-800 border border-zinc-700 rounded-lg pl-3.5 pr-11 py-2 text-xs text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-green-500 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        aria-label={showApiKey ? "Sembunyikan API Key" : "Tampilkan API Key"}
+                        className="w-10 h-10 flex items-center justify-center absolute right-1 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-white"
                       >
-                        {aiTestResult.success ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
-                            <div className="truncate">
-                              <strong>Terhubung Sukses!</strong> ({aiTestResult.latencyMs}ms): &quot;
-                              {aiTestResult.message}&quot;
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />
-                            <div className="truncate">{aiTestResult.error}</div>
-                          </>
-                        )}
-                      </div>
-                    )}
+                        {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-semibold text-zinc-200 text-xs mb-1.5">
+                        Model AI
+                      </label>
+                      <select
+                        value={aiModel}
+                        onChange={(e) => setAiModel(e.target.value)}
+                        className="w-full min-h-[44px] bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Cepat & Ringan)</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Stabil)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Penalaran Lanjut)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={handleTestAi}
+                        disabled={testingAi || !geminiApiKey.trim()}
+                        className="w-full min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-green-800 hover:bg-green-700 disabled:opacity-40 text-white font-semibold text-xs transition-colors"
+                      >
+                        <Zap className={`w-4 h-4 ${testingAi ? "animate-spin" : ""}`} />
+                        <span>{testingAi ? "Menguji..." : "Uji Koneksi Gemini"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {aiTestResult && (
+                    <div
+                      className={`p-3 rounded-lg text-xs flex items-center gap-2 border ${
+                        aiTestResult.success
+                          ? "bg-green-900/40 border-green-700 text-green-200"
+                          : "bg-red-900/40 border-red-700 text-red-200"
+                      }`}
+                    >
+                      {aiTestResult.success ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-green-300 shrink-0" />
+                          <div className="truncate">
+                            <strong>Terhubung</strong> ({aiTestResult.latencyMs}ms): &quot;
+                            {aiTestResult.message}&quot;
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-4 h-4 text-red-300 shrink-0" />
+                          <div className="truncate">{aiTestResult.error}</div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {/* TAB 4: POLICIES & TERMS */}
             {activeTab === "policy" && (
-              <div className="space-y-6 animate-in fade-in">
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-xs space-y-4">
-                  <h2 className="font-bold text-sm text-stone-900 font-serif border-b border-stone-100 pb-3">
-                    Kebijakan & Garansi Toko
-                  </h2>
+              <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4">
+                <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
+                  Kebijakan & Garansi Toko
+                </h2>
 
-                  <div>
-                    <label className="block font-semibold text-stone-700 mb-1">
-                      Syarat & Ketentuan Layanan
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={termsAndConditions}
-                      onChange={(e) => setTermsAndConditions(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-semibold text-zinc-800 mb-1.5">
+                    Syarat & Ketentuan Layanan
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={termsAndConditions}
+                    onChange={(e) => setTermsAndConditions(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block font-semibold text-stone-700 mb-1">
-                      Kebijakan Garansi & Retur 7 Hari
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={returnPolicy}
-                      onChange={(e) => setReturnPolicy(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-semibold text-zinc-800 mb-1.5">
+                    Kebijakan Garansi & Retur 7 Hari
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={returnPolicy}
+                    onChange={(e) => setReturnPolicy(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block font-semibold text-stone-700 mb-1">
-                      Kebijakan Privasi Pelanggan
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={privacyPolicy}
-                      onChange={(e) => setPrivacyPolicy(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-semibold text-zinc-800 mb-1.5">
+                    Kebijakan Privasi Pelanggan
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={privacyPolicy}
+                    onChange={(e) => setPrivacyPolicy(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                  />
                 </div>
               </div>
             )}
 
-            {/* Save Action Button Bar */}
+            {/* TAB 5: EMAIL & QRIS NOTIFICATION */}
+            {activeTab === "email" && (
+              <div className="bg-white rounded-xl p-6 border border-zinc-200 space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
+                  <div>
+                    <h2 className="font-bold text-sm text-zinc-900">
+                      Email Otomatis & Pengiriman Kode QRIS
+                    </h2>
+                    <p className="text-xs text-zinc-600 mt-0.5">
+                      Saat pelanggan memilih QRIS, detail pesanan beserta pesan tambahan otomatis dikirim ke email admin. Admin dapat langsung membalas dengan lampiran QRIS ke email pelanggan dari halaman Pesanan.
+                    </p>
+                  </div>
+                  <Link
+                    href="/admin/orders"
+                    className="text-xs font-semibold text-green-800 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Kelola Pesanan QRIS</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-1.5 text-xs text-zinc-700">
+                  <div className="font-bold text-zinc-900">Panduan Cepat Gmail SMTP (Gratis & Langsung Aktif)</div>
+                  <ol className="list-decimal list-inside space-y-1 text-zinc-700">
+                    <li>Aktifkan Verifikasi 2 Langkah di akun Google pengirim (<span className="font-mono">myaccount.google.com/security</span>).</li>
+                    <li>Buat Sandi Aplikasi (App Password) 16 karakter, lalu salin ke kolom <strong>SMTP App Password</strong> di bawah.</li>
+                    <li>Isi alamat Gmail Anda pada kolom <strong>SMTP Username</strong>, klik <strong>Simpan Perubahan</strong>, lalu tekan <strong>Kirim Email Uji Coba</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      Email Admin Penerima Notifikasi QRIS
+                    </label>
+                    <input
+                      type="email"
+                      value={adminNotificationEmail}
+                      onChange={(e) => setAdminNotificationEmail(e.target.value)}
+                      placeholder="jaidav.enggineernes@gmail.com"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      SMTP Host
+                    </label>
+                    <input
+                      type="text"
+                      value={smtpHost}
+                      onChange={(e) => setSmtpHost(e.target.value)}
+                      placeholder="smtp.gmail.com"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs font-mono text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      SMTP Port
+                    </label>
+                    <input
+                      type="number"
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(e.target.value)}
+                      placeholder="587"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs font-mono text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      SMTP Username (Email Pengirim)
+                    </label>
+                    <input
+                      type="email"
+                      value={smtpUser}
+                      onChange={(e) => setSmtpUser(e.target.value)}
+                      placeholder="jaidav.enggineernes@gmail.com"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                    />
+                    <p className="text-[11px] text-zinc-600 mt-1">
+                      Isi alamat email Gmail penuh (contoh: <span className="font-mono">jaidav.enggineernes@gmail.com</span>), bukan nama aplikasi.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      SMTP Password / Gmail App Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showSmtpPass ? "text" : "password"}
+                        value={smtpPass}
+                        onChange={(e) => setSmtpPass(e.target.value)}
+                        placeholder="16 karakter App Password Gmail"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 pr-11 text-xs font-mono text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSmtpPass(!showSmtpPass)}
+                        aria-label={showSmtpPass ? "Sembunyikan password SMTP" : "Tampilkan password SMTP"}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-zinc-600 hover:text-zinc-900"
+                      >
+                        {showSmtpPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      Alamat Pengirim / Sender Header (Opsional)
+                    </label>
+                    <input
+                      type="text"
+                      value={emailFrom}
+                      onChange={(e) => setEmailFrom(e.target.value)}
+                      placeholder="JNshop Store <jaidav.enggineernes@gmail.com>"
+                      className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 pt-2 border-t border-zinc-200">
+                    <label className="block font-semibold text-zinc-800 mb-1.5">
+                      Resend API Key (Alternatif Opsional jika tidak memakai SMTP)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showResendKey ? "text" : "password"}
+                        value={resendApiKey}
+                        onChange={(e) => setResendApiKey(e.target.value)}
+                        placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
+                        className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3.5 py-2.5 pr-11 text-xs font-mono text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowResendKey(!showResendKey)}
+                        aria-label={showResendKey ? "Sembunyikan Resend API Key" : "Tampilkan Resend API Key"}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-zinc-600 hover:text-zinc-900"
+                      >
+                        {showResendKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleTestEmail}
+                    disabled={testingEmail}
+                    className="min-h-[44px] px-4 py-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors inline-flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{testingEmail ? "Mengirim Email Uji Coba..." : "Kirim Email Uji Coba"}</span>
+                  </button>
+
+                  {emailTestResult && (
+                    <div
+                      className={`flex items-start gap-2 text-xs px-3 py-2 rounded-lg border ${
+                        emailTestResult.success
+                          ? "bg-green-50 border-green-200 text-green-800"
+                          : "bg-red-50 border-red-200 text-red-700"
+                      }`}
+                    >
+                      {emailTestResult.success ? (
+                        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      )}
+                      <span>
+                        {emailTestResult.success ? emailTestResult.message : emailTestResult.error}
+                        {emailTestResult.latencyMs ? ` (${emailTestResult.latencyMs}ms)` : ""}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Save Bar */}
             <div className="pt-2 flex items-center justify-end gap-3">
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 font-semibold text-xs shadow-md disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-lg bg-green-800 hover:bg-green-900 text-white font-semibold text-xs disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                <span>{saving ? "Menyimpan ke Seluruh Website..." : "Simpan Perubahan & Publikasikan"}</span>
+                <span>{saving ? "Menyimpan..." : "Simpan Perubahan & Publikasikan"}</span>
               </button>
             </div>
           </form>
         )}
 
-        {/* RIGHT COLUMN: THE LIVE INTERACTIVE PREVIEW PANE (ACCURATELY MATCHING USER PHOTO) */}
+        {/* RIGHT COLUMN: LIVE INTERACTIVE PREVIEW PANE */}
         {viewMode !== "form" && (
           <div
             className={`space-y-4 ${
               viewMode === "split" ? "xl:col-span-6 xl:sticky xl:top-6" : "max-w-4xl mx-auto w-full"
             }`}
           >
-            {/* Header info */}
-            <div className="flex items-center justify-between bg-stone-900 text-stone-200 px-4 py-2.5 rounded-2xl text-xs shadow-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-semibold text-white">
-                  Pratinjau Toko Real-Time (Sesuai Foto Unggahan)
-                </span>
-              </div>
-              <span className="text-[10px] text-amber-300 font-medium">
-                Berubah seketika saat Anda mengetik
+            <div className="flex items-center justify-between bg-zinc-900 text-zinc-200 px-4 py-2.5 rounded-xl text-xs">
+              <span className="font-semibold text-white">
+                Pratinjau Toko Langsung
+              </span>
+              <span className="text-[11px] text-zinc-300 font-medium">
+                Pembaruan otomatis saat mengetik
               </span>
             </div>
 
-            {/* Preview Device Mockup Container */}
+            {/* Preview Device Container */}
             <div
               className={`transition-all duration-300 mx-auto ${
                 previewDevice === "mobile"
-                  ? "max-w-sm rounded-[2.5rem] border-[10px] border-stone-800 shadow-2xl overflow-hidden bg-[#faf9f6]"
-                  : "w-full rounded-2xl border border-stone-300 shadow-xl overflow-hidden bg-[#faf9f6]"
+                  ? "max-w-sm rounded-3xl border-[8px] border-zinc-800 overflow-hidden bg-white shadow-lg"
+                  : "w-full rounded-xl border border-zinc-300 overflow-hidden bg-white shadow-sm"
               }`}
             >
-              {/* Browser or Phone Frame Header */}
               {previewDevice === "desktop" ? (
-                <div className="bg-stone-200/90 border-b border-stone-300 px-4 py-2 flex items-center gap-2 text-xs text-stone-600">
+                <div className="bg-zinc-100 border-b border-zinc-200 px-4 py-2 flex items-center gap-2 text-xs text-zinc-600">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
                   </div>
-                  <div className="flex-1 mx-2 bg-white rounded-md py-0.5 px-3 text-[11px] text-stone-500 font-mono text-center border border-stone-300 truncate">
+                  <div className="flex-1 mx-2 bg-white rounded-md py-0.5 px-3 text-[11px] text-zinc-600 font-mono text-center border border-zinc-200 truncate">
                     https://{storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "jnshop"}.com
                   </div>
                 </div>
               ) : (
-                <div className="bg-stone-900 text-white pt-2 pb-1 px-6 flex items-center justify-between text-[10px]">
+                <div className="bg-zinc-900 text-white pt-2 pb-1 px-6 flex items-center justify-between text-[10px]">
                   <span>09:41</span>
-                  <div className="w-16 h-3 bg-stone-800 rounded-full" />
-                  <span>5G 100%</span>
+                  <div className="w-16 h-2.5 bg-zinc-800 rounded-full" />
+                  <span>5G</span>
                 </div>
               )}
 
-              {/* Scrollable Inside Preview Content */}
-              <div className="max-h-[820px] overflow-y-auto divide-y divide-stone-200/80 text-stone-800 font-sans">
-                
-                {/* 1. Live Top Announcement Bar */}
-                <div className="bg-[#1c1917] text-stone-300 text-[10px] sm:text-[11px] py-1.5 px-3 flex flex-wrap items-center justify-between gap-1.5">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                    <span className="truncate">
-                      {bannerAnnouncement || "Koleksi Alat Kerja & Solusi Digital Terkurasi"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] text-stone-400 shrink-0 ml-auto">
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                      <MessageCircle className="w-2.5 h-2.5" />
-                      <span>+{cleanWhatsapp}</span>
-                    </span>
-                  </div>
+              <div className="max-h-[820px] overflow-y-auto divide-y divide-zinc-200 text-zinc-900 font-sans">
+                {/* 1. Top Announcement Bar */}
+                <div className="bg-zinc-900 text-zinc-200 text-[10px] sm:text-[11px] py-1.5 px-3 flex flex-wrap items-center justify-between gap-1.5">
+                  <span className="truncate">
+                    {bannerAnnouncement || "Koleksi Alat Kerja & Solusi Digital Terkurasi"}
+                  </span>
+                  <span className="text-green-300 font-semibold flex items-center gap-1 shrink-0 ml-auto">
+                    <MessageCircle className="w-2.5 h-2.5" />
+                    <span>+{cleanWhatsapp}</span>
+                  </span>
                 </div>
 
-                {/* 2. Live Navbar */}
-                <div className="bg-[#faf9f6]/95 border-b border-stone-200/90 px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+                {/* 2. Navbar Preview */}
+                <div className="bg-white border-b border-zinc-200 px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#1c1917] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold text-xs">
                       {storeName.substring(0, 2).toUpperCase() || "JN"}
                     </div>
                     <div>
-                      <div className="font-extrabold text-xs sm:text-sm text-stone-900 leading-tight">
+                      <div className="font-bold text-xs sm:text-sm text-zinc-900 leading-tight">
                         {storeName || "JNshop"}
                       </div>
-                      <div className="text-[8px] uppercase tracking-wider text-stone-400 font-medium">
-                        {tagLine || "Boutique & Atelier"}
+                      <div className="text-[9px] uppercase tracking-wider text-zinc-600 font-medium">
+                        {tagLine || "Studio Perangkat & Digital"}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] px-2 py-1 rounded-md bg-stone-100 text-stone-700 font-medium">
+                    <span className="text-[10px] px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-800 font-medium">
                       Katalog
                     </span>
-                    <span className="text-[10px] px-2 py-1 rounded-md bg-stone-900 text-white font-medium">
+                    <span className="text-[10px] px-2.5 py-1 rounded-md bg-zinc-900 text-white font-medium">
                       Keranjang (0)
                     </span>
                   </div>
                 </div>
 
-                {/* 3. THE LIVE HERO SECTION (MATCHING USER PHOTO EXACTLY) */}
-                <div className="p-4 sm:p-6 bg-[#f4f2ec] space-y-4">
-                  {/* Left Narrative Preview */}
+                {/* 3. Live Hero Preview (Crisp Independent Studio) */}
+                <div className="p-4 sm:p-6 bg-white space-y-4">
                   <div className="space-y-3">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-200/80 border border-stone-300 text-stone-800 text-[10px] font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      <span>{heroBadge}</span>
-                    </div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-green-800">
+                      {heroBadge}
+                    </p>
 
-                    <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight text-stone-900 font-serif leading-tight">
+                    <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900 leading-tight">
                       {heroTitle}
                     </h2>
 
-                    <p className="text-[11px] sm:text-xs text-stone-600 leading-relaxed font-normal">
+                    <p className="text-xs text-zinc-600 leading-relaxed">
                       {heroSubtitle}
                     </p>
 
-                    {/* Action Buttons */}
                     <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <div className="px-4 py-2 rounded-xl bg-[#1c1917] text-[#faf9f6] font-bold text-[11px] flex items-center gap-1.5 shadow-xs">
+                      <div className="px-4 py-2 rounded-lg bg-zinc-900 text-white font-semibold text-[11px] flex items-center gap-1.5">
                         <span>{heroPrimaryBtnText}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
-                      <div className="px-3.5 py-2 rounded-xl bg-white text-stone-800 font-semibold text-[11px] border border-stone-300 shadow-xs">
+                      <div className="px-3.5 py-2 rounded-lg bg-white text-zinc-900 font-semibold text-[11px] border border-zinc-200">
                         <span>{heroSecondaryBtnText}</span>
                       </div>
                     </div>
 
-                    {/* 3 Guarantees */}
-                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-stone-200">
+                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-zinc-200">
                       <div>
-                        <div className="text-xs sm:text-sm font-extrabold text-stone-900 truncate">
+                        <div className="text-xs sm:text-sm font-bold text-zinc-900 truncate">
                           {guarantee1Title}
                         </div>
-                        <div className="text-[9px] text-stone-500 truncate">{guarantee1Desc}</div>
+                        <div className="text-[10px] text-zinc-600 truncate">{guarantee1Desc}</div>
                       </div>
                       <div>
-                        <div className="text-xs sm:text-sm font-extrabold text-stone-900 truncate">
+                        <div className="text-xs sm:text-sm font-bold text-zinc-900 truncate">
                           {guarantee2Title}
                         </div>
-                        <div className="text-[9px] text-stone-500 truncate">{guarantee2Desc}</div>
+                        <div className="text-[10px] text-zinc-600 truncate">{guarantee2Desc}</div>
                       </div>
                       <div>
-                        <div className="text-xs sm:text-sm font-extrabold text-stone-900 truncate">
+                        <div className="text-xs sm:text-sm font-bold text-zinc-900 truncate">
                           {guarantee3Title}
                         </div>
-                        <div className="text-[9px] text-stone-500 truncate">{guarantee3Desc}</div>
+                        <div className="text-[10px] text-zinc-600 truncate">{guarantee3Desc}</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Curated Flagship Showcase Card Preview (The Key Item in Photo) */}
-                  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200/90 shadow-md space-y-3.5 mt-4">
-                    <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
-                          {showcaseBadgeLeft}
-                        </span>
-                      </div>
-                      <span className="text-[9px] font-semibold text-stone-400">
+                  {/* Curated Showcase Card Preview */}
+                  <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-3 mt-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-green-800">
+                        {showcaseBadgeLeft}
+                      </span>
+                      <span className="text-[10px] font-medium text-zinc-600">
                         {showcaseBadgeRight}
                       </span>
                     </div>
 
                     <div className="space-y-2.5">
-                      <div className="aspect-4/3 rounded-xl overflow-hidden bg-stone-100 relative group">
+                      <div className="aspect-4/3 rounded-lg overflow-hidden bg-zinc-200 relative">
                         <img
                           src={showcaseImageUrl}
                           alt={showcaseTitle}
                           className="w-full h-full object-cover"
                         />
-                        {showcaseTagPill && (
-                          <div className="absolute bottom-2 left-2 bg-[#1c1917]/85 backdrop-blur-md px-2.5 py-1 rounded-lg text-white text-[10px] font-bold">
-                            {showcaseTagPill}
-                          </div>
-                        )}
                       </div>
+                      {showcaseTagPill && (
+                        <div className="text-[11px] font-semibold text-zinc-700">
+                          {showcaseTagPill}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between pt-0.5">
                         <div className="min-w-0 pr-2">
-                          <h4 className="font-bold text-xs sm:text-sm text-stone-900 truncate">
+                          <h4 className="font-bold text-xs sm:text-sm text-zinc-900 truncate">
                             {showcaseTitle}
                           </h4>
-                          <p className="text-[10px] text-stone-500 truncate">
+                          <p className="text-[11px] text-zinc-600 truncate">
                             {showcaseSubtitle}
                           </p>
                         </div>
-                        <span className="text-[11px] font-bold text-stone-800 underline shrink-0">
+                        <span className="text-[11px] font-semibold text-green-800 underline shrink-0">
                           {showcaseLinkText}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-100 flex items-center justify-between text-[10px]">
-                      <span className="text-stone-600 truncate">{showcaseConsultText}</span>
+                    <div className="p-2.5 bg-white rounded-lg border border-zinc-200 flex items-center justify-between text-[10px]">
+                      <span className="text-zinc-600 truncate">{showcaseConsultText}</span>
                       <a
                         href={whatsappTestUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 shrink-0 ml-1"
+                        className="font-semibold text-green-800 hover:underline flex items-center gap-1 shrink-0 ml-1"
                       >
                         <MessageCircle className="w-3 h-3" />
-                        <span>Tanya Owner (+{cleanWhatsapp})</span>
+                        <span>+{cleanWhatsapp}</span>
                       </a>
                     </div>
                   </div>
                 </div>
 
-                {/* 4. Live Footer Preview */}
-                <div className="p-4 sm:p-5 bg-[#1c1917] text-stone-400 space-y-3 text-[10px]">
+                {/* 4. Footer Preview */}
+                <div className="p-4 sm:p-5 bg-zinc-900 text-zinc-300 space-y-3 text-[11px]">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-stone-800 text-amber-200 flex items-center justify-center font-bold text-[10px] border border-stone-700">
+                    <div className="w-6 h-6 rounded-md bg-zinc-800 text-white flex items-center justify-center font-bold text-[10px] border border-zinc-700">
                       {storeName.substring(0, 2).toUpperCase() || "JN"}
                     </div>
-                    <span className="font-bold text-stone-100 text-xs font-serif">
+                    <span className="font-bold text-white text-xs">
                       {storeName || "JNshop"}
                     </span>
                   </div>
 
-                  <div className="pt-2 border-t border-stone-800 space-y-1">
-                    <div>WhatsApp Resmi: <span className="text-amber-300 font-mono">+{cleanWhatsapp}</span></div>
-                    <div>Email: <span className="text-stone-300">{email || "owner@jnshop.com"}</span></div>
+                  <div className="pt-2 border-t border-zinc-800 space-y-1">
+                    <div>
+                      WhatsApp Resmi: <span className="text-green-300 font-mono">+{cleanWhatsapp}</span>
+                    </div>
+                    <div>
+                      Email: <span className="text-zinc-200">{email || "owner@jnshop.com"}</span>
+                    </div>
                   </div>
 
-                  <div className="pt-2 border-t border-stone-800 text-[9px] text-stone-500">
-                    © {new Date().getFullYear()} {storeName || "JNshop"}. All rights reserved.
+                  <div className="pt-2 border-t border-zinc-800 text-[10px] text-zinc-400">
+                    © {new Date().getFullYear()} {storeName || "JNshop"}.
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* Bottom Tip */}
-            <div className="p-3 rounded-2xl bg-stone-100 border border-stone-200/80 text-[11px] text-stone-600 flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-zinc-100 border border-zinc-200 text-xs text-zinc-700 flex items-center justify-between gap-2">
               <span>
-                💡 Begitu Anda menekan <strong>Simpan Perubahan</strong>, seluruh teks di beranda toko publik langsung berubah tanpa perlu menyentuh kodingan.
+                Tekan <strong>Simpan Perubahan</strong> untuk menerapkan seluruh teks dan nomor kontak langsung ke toko publik.
               </span>
               <button
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="text-stone-900 font-bold underline underline-offset-2 ml-2 hover:text-amber-700 shrink-0"
+                className="min-h-[36px] px-3 py-1 rounded-lg bg-zinc-900 text-white font-semibold text-xs shrink-0"
               >
                 Simpan
               </button>

@@ -3,71 +3,74 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, PackageCheck, ShieldCheck, ArrowRight } from "lucide-react";
+import { Search, PackageSearch, ArrowRight } from "lucide-react";
 
 export default function TrackOrderPage() {
   const router = useRouter();
   const [orderNumber, setOrderNumber] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleTrack = (e: React.FormEvent) => {
     e.preventDefault();
-    if (orderNumber.trim()) {
-      router.push(`/orders/${orderNumber.trim()}`);
+    const cleanCode = orderNumber.trim().toUpperCase();
+    if (!cleanCode) {
+      setError("Masukkan nomor invoice pesanan Anda.");
+      return;
     }
+    setError("");
+    router.push(`/orders/${encodeURIComponent(cleanCode)}`);
   };
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-16 sm:py-24 space-y-8">
-      <div className="text-center space-y-3">
-        <div className="w-14 h-14 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center mx-auto border border-stone-200">
-          <PackageCheck className="w-7 h-7" />
+    <div className="max-w-xl mx-auto px-4 py-12 sm:py-20 space-y-6">
+      <div className="text-center space-y-2.5">
+        <div className="w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200 text-zinc-900 flex items-center justify-center mx-auto">
+          <PackageSearch className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight">
-          Lacak Pengiriman & Status Pesanan
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight">
+          Lacak Status Pesanan
         </h1>
-        <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
-          Masukkan nomor invoice transaksi JNshop Anda untuk memantau status pesanan, nomor resi ekspedisi, atau mengakses unduhan lisensi digital.
+        <p className="text-sm text-zinc-600 leading-relaxed">
+          Masukkan kode invoice pesanan untuk melihat status pembayaran, nomor resi, atau mengunduh produk digital Anda.
         </p>
       </div>
 
-      <div className="bg-white/95 rounded-2xl p-6 sm:p-8 border border-stone-200/90 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-stone-700 mb-1.5">
-              Nomor Invoice / ID Pesanan
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                required
-                placeholder="Contoh: JN-20261101-9981"
-                value={orderNumber}
-                onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
-                className="w-full bg-stone-50/60 border border-stone-200 text-stone-900 font-mono tracking-wider rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-900 transition-all uppercase placeholder:normal-case placeholder:font-sans placeholder:text-stone-400"
-              />
-              <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5" />
-            </div>
+      <form
+        onSubmit={handleTrack}
+        className="bg-white rounded-xl p-6 border border-zinc-200 space-y-4"
+      >
+        <div>
+          <label htmlFor="track-order-input" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+            Nomor Pesanan / Invoice
+          </label>
+          <div className="relative">
+            <input
+              id="track-order-input"
+              type="text"
+              placeholder="Contoh: INV-20261108-XXXX"
+              value={orderNumber}
+              onChange={(e) => setOrderNumber(e.target.value)}
+              className="w-full h-11 bg-zinc-50 border border-zinc-300 rounded-lg pl-10 pr-4 text-sm font-mono uppercase text-zinc-900 focus:outline-none focus:bg-white focus:border-green-800"
+            />
+            <Search className="w-4 h-4 text-zinc-600 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-
-          <button
-            type="submit"
-            disabled={!orderNumber.trim()}
-            className="w-full py-3 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-100 font-medium text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Cari Data Pesanan</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
-
-        <div className="mt-6 pt-5 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
-            <span>Verifikasi aman JNshop</span>
-          </div>
-          <Link href="/account/orders" className="text-stone-800 font-medium hover:underline">
-            Lihat di Akun Saya
-          </Link>
+          {error && <p className="text-xs font-medium text-red-800 mt-1.5">{error}</p>}
         </div>
+
+        <button
+          type="submit"
+          className="w-full min-h-[44px] px-4 rounded-lg bg-zinc-900 hover:bg-green-800 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
+        >
+          <span>Cek Status Pesanan</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </form>
+
+      <div className="text-center text-xs text-zinc-600">
+        Sudah memiliki akun?{" "}
+        <Link href="/account/orders" className="font-semibold text-green-800 hover:underline">
+          Lihat seluruh riwayat pesanan
+        </Link>
       </div>
     </div>
   );

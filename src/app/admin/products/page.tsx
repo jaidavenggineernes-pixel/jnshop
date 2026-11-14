@@ -10,7 +10,7 @@ export default async function AdminProductsPage() {
       orderBy: { createdAt: "desc" },
       include: {
         category: { select: { id: true, name: true, slug: true } },
-        images: { take: 1, orderBy: { order: "asc" } },
+        images: { orderBy: [{ isPrimary: "desc" }, { order: "asc" }] },
         variants: true,
       },
     }),

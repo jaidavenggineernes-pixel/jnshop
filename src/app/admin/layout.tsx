@@ -14,27 +14,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (session.role !== "ADMIN") {
     return (
-      <div className="min-h-[75vh] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white/95 rounded-2xl p-8 border border-stone-200/90 text-center space-y-4 shadow-sm">
-          <div className="w-12 h-12 rounded-full bg-stone-100 text-stone-800 flex items-center justify-center mx-auto border border-stone-200">
-            <ShieldAlert className="w-6 h-6 text-amber-700" />
+      <div className="min-h-[75vh] flex items-center justify-center p-4 bg-white">
+        <div className="max-w-md w-full bg-white rounded-xl p-8 border border-zinc-200 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-serif font-bold text-stone-900">Akses Ditolak (403)</h2>
-          <p className="text-xs text-stone-600 leading-relaxed">
-            Halaman ini khusus untuk Administrator / Pemilik Toko JNshop. Akun Anda saat ini ({session.email}) berstatus Pelanggan.
+          <h1 className="text-xl font-bold text-zinc-900">Akses Dibatasi (403)</h1>
+          <p className="text-sm text-zinc-600 leading-relaxed">
+            Halaman ini khusus Administrator JNshop. Akun Anda saat ini ({session.email}) berstatus Pelanggan.
           </p>
           <div className="pt-2 flex flex-col gap-2">
             <Link
               href="/"
-              className="py-2.5 px-4 rounded-xl bg-stone-900 text-stone-100 font-medium text-xs hover:bg-stone-800 transition-colors"
+              className="min-h-[44px] px-4 rounded-lg bg-zinc-900 hover:bg-green-800 text-white font-semibold text-xs flex items-center justify-center transition-colors"
             >
               Kembali ke Toko
             </Link>
             <Link
               href="/login?redirect=/admin"
-              className="py-2 px-4 rounded-xl text-stone-700 hover:text-stone-900 font-medium text-xs hover:underline"
+              className="min-h-[40px] px-4 rounded-lg text-zinc-700 hover:text-zinc-900 font-semibold text-xs flex items-center justify-center hover:underline"
             >
-              Ganti Akun ke Admin
+              Masuk dengan Akun Admin
             </Link>
           </div>
         </div>
@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f4f0] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-zinc-50 flex flex-col lg:flex-row">
       <AdminNav user={session} />
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">{children}</main>
     </div>

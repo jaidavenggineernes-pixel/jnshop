@@ -7,9 +7,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    await requireAdminUser();
     const setting = await prisma.storeSetting.findUnique({ where: { id: "default" } });
     return NextResponse.json({ setting });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.message === "UNAUTHORIZED" || error?.message === "FORBIDDEN_ADMIN_ONLY") {
+      return NextResponse.json({ error: "Akses ditolak: Khusus Administrator." }, { status: 403 });
+    }
     return NextResponse.json({ error: "Failed to load store settings" }, { status: 500 });
   }
 }
@@ -33,6 +37,14 @@ export async function PUT(req: Request) {
       returnPolicy,
       geminiApiKey,
       aiModel,
+      // Email & QRIS Notification Settings
+      adminNotificationEmail,
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPass,
+      emailFrom,
+      resendApiKey,
       // Homepage Hero & Showcase CMS
       heroBadge,
       heroTitle,
@@ -75,6 +87,29 @@ export async function PUT(req: Request) {
       geminiApiKey,
       aiModel,
     };
+
+    if (adminNotificationEmail !== undefined) {
+      updatePayload.adminNotificationEmail = String(adminNotificationEmail).trim() || null;
+    }
+    if (smtpHost !== undefined) {
+      updatePayload.smtpHost = String(smtpHost).trim() || null;
+    }
+    if (smtpPort !== undefined && smtpPort !== "") {
+      const parsedPort = Number.parseInt(String(smtpPort), 10);
+      updatePayload.smtpPort = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 587;
+    }
+    if (smtpUser !== undefined) {
+      updatePayload.smtpUser = String(smtpUser).trim() || null;
+    }
+    if (smtpPass !== undefined) {
+      updatePayload.smtpPass = String(smtpPass).trim() || null;
+    }
+    if (emailFrom !== undefined) {
+      updatePayload.emailFrom = String(emailFrom).trim() || null;
+    }
+    if (resendApiKey !== undefined) {
+      updatePayload.resendApiKey = String(resendApiKey).trim() || null;
+    }
 
     if (heroBadge !== undefined) updatePayload.heroBadge = heroBadge;
     if (heroTitle !== undefined) updatePayload.heroTitle = heroTitle;

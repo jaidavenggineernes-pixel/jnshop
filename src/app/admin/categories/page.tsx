@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FolderTree, Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, AlertCircle } from "lucide-react";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -19,7 +19,7 @@ export default function AdminCategoriesPage() {
         setCategories(data.categories || []);
       }
     } catch {
-      // fallback
+      // ignore network error
     }
   };
 
@@ -43,7 +43,7 @@ export default function AdminCategoriesPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Gagal membuat kategori");
+        throw new Error(data.error || "Gagal membuat kategori.");
       }
 
       setName("");
@@ -58,25 +58,24 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+      <div className="pb-5 border-b border-zinc-200">
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight">
           Kategori Produk
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Kelola struktur kategori untuk mengelompokkan produk fisik dan digital di JNshop.
+        <p className="text-xs sm:text-sm text-zinc-600 mt-1">
+          Kelompokkan produk fisik dan lisensi digital di katalog JNshop.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Form Add Category */}
-        <div className="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm space-y-4">
-          <h2 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-blue-600" />
+        <div className="lg:col-span-5 bg-white p-6 rounded-xl border border-zinc-200 space-y-4">
+          <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3 flex items-center gap-2">
+            <Plus className="w-4 h-4 text-green-800" />
             Tambah Kategori Baru
           </h2>
 
           {error && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -84,73 +83,77 @@ export default function AdminCategoriesPage() {
 
           <form onSubmit={handleCreateCategory} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="cat-name" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                 Nama Kategori *
               </label>
               <input
+                id="cat-name"
                 type="text"
                 required
-                placeholder="Contoh: Aksesoris Gaming"
+                placeholder="Contoh: Aksesoris Meja"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-11 bg-zinc-50 border border-zinc-300 rounded-lg px-3.5 text-sm text-zinc-900 focus:outline-none focus:bg-white focus:border-green-800"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="cat-desc" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                 Deskripsi Singkat
               </label>
               <input
+                id="cat-desc"
                 type="text"
-                placeholder="Deskripsi kategori untuk SEO dan etalase"
+                placeholder="Penjelasan kategori di halaman koleksi"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm"
+                className="w-full h-11 bg-zinc-50 border border-zinc-300 rounded-lg px-3.5 text-sm text-zinc-900 focus:outline-none focus:bg-white focus:border-green-800"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Icon</label>
+              <label htmlFor="cat-icon" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                Ikon Referensi
+              </label>
               <select
+                id="cat-icon"
                 value={icon}
                 onChange={(e) => setIcon(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                className="w-full h-11 bg-zinc-50 border border-zinc-300 rounded-lg px-3.5 text-sm text-zinc-900 focus:outline-none focus:bg-white focus:border-green-800"
               >
                 <option value="ShoppingBag">ShoppingBag (Umum)</option>
                 <option value="Binary">Binary (Digital & Code)</option>
-                <option value="Laptop">Laptop (Gadget & Komputer)</option>
+                <option value="Laptop">Laptop (Perangkat Keras)</option>
                 <option value="MousePointer">MousePointer (Aksesoris)</option>
-                <option value="Briefcase">Briefcase (Jasa & Layanan)</option>
-                <option value="Shirt">Shirt (Fashion & Apparel)</option>
+                <option value="Briefcase">Briefcase (Jasa)</option>
+                <option value="Shirt">Shirt (Apparel)</option>
               </select>
             </div>
 
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full min-h-[44px] rounded-lg bg-zinc-900 hover:bg-green-800 disabled:opacity-50 text-white font-semibold text-xs transition-colors"
             >
-              <span>{loading ? "Menyimpan..." : "Simpan Kategori"}</span>
+              {loading ? "Menyimpan..." : "Simpan Kategori"}
             </button>
           </form>
         </div>
 
-        {/* Existing Categories Table */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100 font-bold text-sm text-slate-900">
-            Daftar Kategori Aktif ({categories.length})
+        <div className="lg:col-span-7 bg-white rounded-xl border border-zinc-200 overflow-hidden">
+          <div className="p-5 border-b border-zinc-200 font-bold text-sm text-zinc-900">
+            Kategori Aktif ({categories.length})
           </div>
 
-          <div className="divide-y divide-slate-100 text-xs">
+          <div className="divide-y divide-zinc-100 text-xs">
             {categories.map((c) => (
-              <div key={c.id} className="p-4 flex items-center justify-between">
+              <div key={c.id} className="p-4 flex items-center justify-between gap-4">
                 <div>
-                  <span className="font-bold text-slate-900 text-sm block">{c.name}</span>
-                  <span className="text-slate-400 font-mono text-[11px]">slug: {c.slug}</span>
-                  {c.description && <p className="text-slate-500 mt-0.5">{c.description}</p>}
+                  <span className="font-bold text-zinc-900 text-sm block">{c.name}</span>
+                  <span className="text-zinc-600 font-mono text-[11px]">slug: {c.slug}</span>
+                  {c.description && <p className="text-zinc-600 mt-1">{c.description}</p>}
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-slate-100 font-bold text-slate-700">
+                <span className="px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 font-semibold text-zinc-900 tabular-nums shrink-0">
                   {c._count?.products || 0} Produk
                 </span>
               </div>

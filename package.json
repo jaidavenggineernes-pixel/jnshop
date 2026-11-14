@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "build:css": "tsx scripts/build-css.ts",
     "dev": "npm run build:css && next dev",
-    "build": "npm run build:css && next build",
+    "build": "prisma generate && npm run build:css && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
@@ -16,11 +17,13 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@types/nodemailer": "^8.0.2",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "jose": "^6.2.15",
     "lucide-react": "^1.70.0",
     "next": "16.4.5",
+    "nodemailer": "^10.5.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },

@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  Sparkles,
+  Wand2,
   Save,
   Package,
   Binary,
   AlertCircle,
-  CheckCircle2,
+  Lock,
 } from "lucide-react";
 
 export default function NewProductPage() {
@@ -138,20 +138,21 @@ export default function NewProductPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/admin/products"
-          className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+          aria-label="Kembali ke manajemen produk"
+          className="w-11 h-11 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 flex items-center justify-center transition-colors shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Tambah Produk Baru</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Tambah Produk Baru</h1>
+          <p className="text-xs text-zinc-600 mt-0.5">
             Lengkapi data produk fisik atau digital untuk ditampilkan di etalase JNshop.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -159,31 +160,37 @@ export default function NewProductPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
-          <h2 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">
+        <div className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 space-y-4">
+          <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
             Informasi Dasar Produk
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Produk *</label>
+            <label htmlFor="prod-name" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+              Nama Produk *
+            </label>
             <input
+              id="prod-name"
               type="text"
               required
               placeholder="Contoh: Keychron K2 Pro Mechanical Keyboard"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Kategori *</label>
+              <label htmlFor="prod-category" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                Kategori *
+              </label>
               <select
+                id="prod-category"
                 required
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm"
+                className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -194,172 +201,185 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <span className="block text-xs font-semibold text-zinc-800 mb-1.5">
                 Format / Tipe Produk
-              </label>
-              <div className="flex gap-2 pt-0.5">
+              </span>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPhysical(true)}
-                  className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                  className={`flex-1 min-h-[44px] py-2 px-3 rounded-lg border text-xs font-semibold transition-colors inline-flex items-center justify-center gap-1.5 ${
                     isPhysical
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-slate-200 text-slate-600 bg-white"
+                      ? "border-green-800 bg-green-50 text-green-800"
+                      : "border-zinc-200 text-zinc-700 bg-white hover:bg-zinc-50"
                   }`}
                 >
-                  📦 Produk Fisik
+                  <Package className="w-4 h-4" />
+                  <span>Produk Fisik</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsPhysical(false)}
-                  className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                  className={`flex-1 min-h-[44px] py-2 px-3 rounded-lg border text-xs font-semibold transition-colors inline-flex items-center justify-center gap-1.5 ${
                     !isPhysical
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-slate-200 text-slate-600 bg-white"
+                      ? "border-green-800 bg-green-50 text-green-800"
+                      : "border-zinc-200 text-zinc-700 bg-white hover:bg-zinc-50"
                   }`}
                 >
-                  ⚡ Produk Digital
+                  <Binary className="w-4 h-4" />
+                  <span>Produk Digital</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="prod-short" className="block text-xs font-semibold text-zinc-800 mb-1.5">
               Ringkasan Singkat (Short Description)
             </label>
             <input
+              id="prod-short"
               type="text"
               placeholder="1-2 kalimat ringkasan produk untuk tampilan kartu"
               value={shortDescription}
               onChange={(e) => setShortDescription(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm"
+              className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
             />
           </div>
 
-          {/* Description with AI generation button */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold text-slate-700">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+              <label htmlFor="prod-desc" className="text-xs font-semibold text-zinc-800">
                 Deskripsi Lengkap & Spesifikasi *
               </label>
               <button
                 type="button"
                 onClick={handleGenerateAIDescription}
                 disabled={generatingAI}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-[11px] shadow-sm hover:opacity-95 disabled:opacity-50 transition-opacity"
+                className="min-h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-[11px] disabled:opacity-50 transition-colors"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>{generatingAI ? "Menulis..." : "Buat dengan AI ✨"}</span>
+                <Wand2 className="w-3.5 h-3.5" />
+                <span>{generatingAI ? "Menulis..." : "Bantu Tulis Deskripsi"}</span>
               </button>
             </div>
             <textarea
+              id="prod-desc"
               rows={5}
               required
               placeholder="Deskripsi fitur, dimensi, paket penjualan, dan spesifikasi produk..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
             />
           </div>
         </div>
 
         {/* Pricing & Inventory */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
-          <h2 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">
+        <div className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 space-y-4">
+          <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
             Harga & Persediaan Stok
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="prod-price" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                 Harga Normal (Rp) *
               </label>
               <input
+                id="prod-price"
                 type="number"
                 required
                 min={0}
                 placeholder="Contoh: 1500000"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm"
+                className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Harga Diskon / Promo (Rp)
+              <label htmlFor="prod-discount" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                Harga Promo (Rp)
               </label>
               <input
+                id="prod-discount"
                 type="number"
                 min={0}
                 placeholder="Kosongkan jika tidak ada promo"
                 value={discountPrice}
                 onChange={(e) => setDiscountPrice(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm"
+                className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Jumlah Stok *</label>
+              <label htmlFor="prod-stock" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                Jumlah Stok *
+              </label>
               <input
+                id="prod-stock"
                 type="number"
                 required
                 min={0}
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm"
+                className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Kode SKU</label>
+              <label htmlFor="prod-sku" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                Kode SKU
+              </label>
               <input
+                id="prod-sku"
                 type="text"
                 placeholder="Contoh: GAD-K2PRO-01"
                 value={sku}
                 onChange={(e) => setSku(e.target.value.toUpperCase())}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm uppercase font-mono"
+                className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 uppercase font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
               />
             </div>
 
             {isPhysical && (
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="prod-weight" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                   Berat Produk (Kilogram)
                 </label>
                 <input
+                  id="prod-weight"
                   type="number"
                   step="0.1"
                   min={0.1}
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm"
+                  className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                 />
               </div>
             )}
           </div>
         </div>
 
-        {/* Digital Product Delivery Settings (if digital) */}
+        {/* Digital Product Delivery Settings */}
         {!isPhysical && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-200 shadow-sm space-y-4">
-            <h2 className="font-bold text-sm text-blue-900 border-b border-blue-100 pb-3 flex items-center gap-2">
-              <Binary className="w-4 h-4 text-blue-600" />
-              Pengaturan Pemenuhan Produk Digital
+          <div className="bg-white rounded-xl p-6 sm:p-7 border border-green-200 space-y-4">
+            <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3 flex items-center gap-2">
+              <Binary className="w-4 h-4 text-green-800" />
+              <span>Pengaturan Pemenuhan Produk Digital</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="dig-type" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                   Metode Pengiriman Digital
                 </label>
                 <select
+                  id="dig-type"
                   value={digitalDeliveryType}
                   onChange={(e) => setDigitalDeliveryType(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                 >
                   <option value="INSTANT_DOWNLOAD">Tautan Download Langsung</option>
                   <option value="LICENSE_KEY">Kode Serial / Lisensi Software</option>
@@ -368,67 +388,69 @@ export default function NewProductPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="dig-url" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                   Tautan File Unduhan (Google Drive / GitHub / Dropbox)
                 </label>
                 <input
+                  id="dig-url"
                   type="url"
                   placeholder="https://drive.google.com/..."
                   value={digitalFileUrl}
                   onChange={(e) => setDigitalFileUrl(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm"
+                  className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="dig-license" className="block text-xs font-semibold text-zinc-800 mb-1.5">
                 Kode Lisensi / Token Akses Bawaan (Opsional)
               </label>
               <input
+                id="dig-license"
                 type="text"
                 placeholder="Contoh: JN-2026-PRO-XXXX"
                 value={digitalLicenseKey}
                 onChange={(e) => setDigitalLicenseKey(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-mono"
+                className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm font-mono text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
               />
             </div>
           </div>
         )}
 
-        {/* Payment Rules & Anti-Loss Protection */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="font-bold text-sm text-slate-900 font-serif">
-              Aturan Metode Pembayaran & Anti-Loss
+        {/* Payment Rules */}
+        <div className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
+            <h2 className="font-bold text-sm text-zinc-900">
+              Aturan Metode Pembayaran
             </h2>
-            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold">
+            <span className="text-[11px] text-green-800 bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full font-semibold">
               Proteksi Kerugian Toko
             </span>
           </div>
 
           {!isPhysical ? (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 flex items-start gap-2.5">
-              <span className="font-bold shrink-0">🔒 Produk Digital:</span>
-              <p className="text-[11px] text-rose-800 leading-relaxed">
-                Metode Cash on Delivery (COD) dinonaktifkan secara permanen untuk produk digital demi mencegah pencurian file/lisensi tanpa pembayaran. Pembeli wajib menyelesaikan pembayaran di awal (QRIS / Transfer Bank).
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-900 flex items-start gap-2.5">
+              <Lock className="w-4 h-4 text-red-800 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-800 leading-relaxed">
+                <strong>Produk Digital:</strong> Metode Cash on Delivery (COD) dinonaktifkan otomatis untuk mencegah pengiriman lisensi/file tanpa pembayaran. Pembeli wajib membayar di muka (QRIS / Transfer Bank).
               </p>
             </div>
           ) : (
-            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex items-start gap-3">
+            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex items-start gap-3">
               <input
                 type="checkbox"
                 id="allowCod"
                 checked={allowCod}
                 onChange={(e) => setAllowCod(e.target.checked)}
-                className="w-4 h-4 text-stone-900 rounded border-stone-300 mt-0.5 cursor-pointer"
+                className="w-5 h-5 text-green-800 rounded border-zinc-300 mt-0.5 shrink-0"
               />
               <div>
-                <label htmlFor="allowCod" className="text-xs font-bold text-stone-900 cursor-pointer block">
+                <label htmlFor="allowCod" className="text-xs font-bold text-zinc-900 cursor-pointer block">
                   Izinkan Metode Pembayaran Cash on Delivery (COD)
                 </label>
-                <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
-                  Centang opsi ini jika Anda mengizinkan pembeli membayar saat paket diterima. Hilangkan centang jika produk bernilai tinggi atau rawan penipuan/return fiktif.
+                <p className="text-xs text-zinc-600 mt-0.5 leading-relaxed">
+                  Centang opsi ini jika Anda mengizinkan pembeli membayar saat paket diterima. Hilangkan centang untuk produk bernilai tinggi agar pembayaran selalu di muka.
                 </p>
               </div>
             </div>
@@ -436,49 +458,50 @@ export default function NewProductPage() {
         </div>
 
         {/* Image & Featured */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
-          <h2 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">
+        <div className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 space-y-4">
+          <h2 className="font-bold text-sm text-zinc-900 border-b border-zinc-200 pb-3">
             Media & Tampilan Etalase
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              URL Foto Produk Utama (Unsplash / Cloudinary / Direct link)
+            <label htmlFor="prod-img" className="block text-xs font-semibold text-zinc-800 mb-1.5">
+              URL Foto Produk Utama
             </label>
             <input
+              id="prod-img"
               type="url"
               placeholder="https://images.unsplash.com/..."
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm"
+              className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-800/30"
             />
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
+          <div className="flex items-center gap-2.5 pt-1">
             <input
               type="checkbox"
               id="isFeatured"
               checked={isFeatured}
               onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded border-slate-300"
+              className="w-5 h-5 text-green-800 rounded border-zinc-300"
             />
-            <label htmlFor="isFeatured" className="text-xs font-bold text-slate-800 cursor-pointer">
-              Tandai sebagai Produk Unggulan di Halaman Utama (Featured)
+            <label htmlFor="isFeatured" className="text-xs font-semibold text-zinc-900 cursor-pointer">
+              Tandai sebagai Produk Unggulan di Halaman Utama
             </label>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
           <Link
             href="/admin/products"
-            className="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50"
+            className="min-h-[44px] px-5 py-2.5 rounded-lg border border-zinc-200 text-zinc-800 font-semibold text-xs hover:bg-zinc-50 inline-flex items-center"
           >
             Batal
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer"
+            className="min-h-[44px] px-6 py-2.5 rounded-lg bg-green-800 hover:bg-green-900 text-white font-semibold text-xs disabled:opacity-50 transition-colors inline-flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? "Menyimpan Produk..." : "Publikasikan Produk"}</span>

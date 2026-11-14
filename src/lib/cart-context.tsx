@@ -3,6 +3,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CartItemData } from "@/types";
 
+interface AppliedCouponState {
+  code: string;
+  discountAmount: number;
+}
+
 interface CartContextType {
   items: CartItemData[];
   itemCount: number;
@@ -13,6 +18,9 @@ interface CartContextType {
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  appliedCoupon: AppliedCouponState | null;
+  setAppliedCoupon: (coupon: AppliedCouponState | null) => void;
+  clearCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextType>({
@@ -25,12 +33,17 @@ const CartContext = createContext<CartContextType>({
   clearCart: () => {},
   isCartOpen: false,
   setIsCartOpen: () => {},
+  appliedCoupon: null,
+  setAppliedCoupon: () => {},
+  clearCoupon: () => {},
 });
 
 const STORAGE_KEY = "jnshop_cart_v1";
+const COUPON_STORAGE_KEY = "jnshop_coupon_v1";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItemData[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCouponState | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -40,6 +53,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         setItems(JSON.parse(saved));
+      }
+      const savedCoupon = localStorage.getItem(COUPON_STORAGE_KEY);
+      if (savedCoupon) {
+        const parsed = JSON.parse(savedCoupon);
+        if (parsed && typeof parsed.code === "string") {
+          setAppliedCoupon(parsed);
+        }
       }
     } catch (e) {
       console.error("Failed to load cart from storage:", e);
@@ -53,11 +73,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (isLoaded) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        if (appliedCoupon) {
+          localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(appliedCoupon));
+        } else {
+          localStorage.removeItem(COUPON_STORAGE_KEY);
+        }
       } catch (e) {
         console.error("Failed to save cart:", e);
       }
     }
-  }, [items, isLoaded]);
+  }, [items, appliedCoupon, isLoaded]);
 
   const addItem = (product: any, variant?: any, quantity = 1) => {
     setItems((prev) => {
@@ -113,6 +138,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
+    setAppliedCoupon(null);
+  };
+
+  const clearCoupon = () => {
+    setAppliedCoupon(null);
   };
 
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -130,6 +160,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         isCartOpen,
         setIsCartOpen,
+        appliedCoupon,
+        setAppliedCoupon,
+        clearCoupon,
       }}
     >
       {children}

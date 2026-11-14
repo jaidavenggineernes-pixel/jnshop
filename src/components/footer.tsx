@@ -1,20 +1,23 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import {
-  ShieldCheck,
-  Package,
-  RotateCcw,
-  Sparkles,
-  ExternalLink,
-  Lock,
-} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Lock } from "lucide-react";
 
 export function Footer({ storeSetting }: { storeSetting?: any }) {
+  const pathname = usePathname();
+
+  // Admin routes render dedicated workspace without storefront footer
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const storeTitle = storeSetting?.storeName || "JNshop";
-  const storeTagline = storeSetting?.tagLine || "Boutique & Atelier";
+  const storeTagline = storeSetting?.tagLine || "Independent Studio";
   const storeDesc =
     storeSetting?.description ||
-    "Ruang belanja mandiri dengan kurasi peralatan meja kerja ergonomis, gawai pilihan, serta aset digital berkualitas tinggi yang dibuat dengan rasa dan dedikasi penuh.";
+    "Katalog independen perlengkapan workstation, aksesori meja kerja, perangkat lunak resmi, dan produk digital siap pakai.";
   const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
   const phoneDisplay =
     storeSetting?.phone || (cleanWa ? `+${cleanWa}` : "+62 851-9121-9129");
@@ -22,230 +25,141 @@ export function Footer({ storeSetting }: { storeSetting?: any }) {
   const address = storeSetting?.address || "Jakarta, Indonesia";
 
   return (
-    <footer className="bg-[#1c1917] text-stone-400 text-sm mt-auto border-t border-stone-800/80">
-      {/* Human Commitments / Boutique Value Propositions */}
-      <div className="border-b border-stone-800/80 bg-[#171412]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-xl bg-stone-800/80 text-amber-300 border border-stone-700/60 shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-stone-100 text-sm font-serif tracking-tight">
-                  Kurasi Penuh Dedikasi
-                </h4>
-                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
-                  Semua barang fisik & kode digital diuji langsung oleh kurator kami.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-xl bg-stone-800/80 text-amber-300 border border-stone-700/60 shrink-0">
-                <Package className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-stone-100 text-sm font-serif tracking-tight">
-                  Pengiriman & Akses Aman
-                </h4>
-                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
-                  Packing rapi dan aman, lisensi digital langsung terkirim seketika.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-xl bg-stone-800/80 text-amber-300 border border-stone-700/60 shrink-0">
-                <RotateCcw className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-stone-100 text-sm font-serif tracking-tight">
-                  Garansi Retur 7 Hari
-                </h4>
-                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
-                  Jaminan uang kembali tanpa berbelit jika barang tidak sesuai deskripsi.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-xl bg-stone-800/80 text-amber-300 border border-stone-700/60 shrink-0">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-stone-100 text-sm font-serif tracking-tight">
-                  {storeTitle} Concierge
-                </h4>
-                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
-                  Asisten belanja cerdas & jalur WhatsApp personal langsung ke kurator.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Footer Links */}
+    <footer className="bg-zinc-950 text-zinc-300 text-sm mt-auto border-t border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
-          
-          {/* Brand Col */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-stone-800 border border-stone-700 flex items-center justify-center text-amber-200 font-serif font-bold text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand & Direct Contact */}
+          <div className="space-y-4">
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-white text-zinc-950 flex items-center justify-center font-bold text-xs tracking-tight">
                 {storeTitle.substring(0, 2).toUpperCase()}
               </div>
-              <div className="flex flex-col">
-                <span className="font-serif text-lg tracking-tight text-stone-100 font-bold">
+              <div className="flex flex-col leading-tight">
+                <span className="font-bold text-base text-white tracking-tight">
                   {storeTitle}
                 </span>
-                <span className="text-[10px] tracking-widest uppercase font-medium text-amber-400/80">
+                <span className="text-[11px] font-medium text-zinc-400">
                   {storeTagline}
                 </span>
               </div>
-            </div>
-            <p className="text-xs sm:text-sm text-stone-400 leading-relaxed max-w-sm">
+            </Link>
+
+            <p className="text-xs leading-relaxed text-zinc-300">
               {storeDesc}
             </p>
-            <div className="pt-2 space-y-1.5 text-xs text-stone-400">
-              <div className="flex items-center gap-2">
-                <span className="text-stone-500">Alamat:</span>
-                <span className="text-stone-300">{address}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-stone-500">Email:</span>
-                <a href={`mailto:${email}`} className="text-stone-300 hover:text-amber-200 transition-colors">
-                  {email}
-                </a>
-              </div>
-              <div className="pt-1">
-                <span className="text-stone-500 block mb-1">WhatsApp Resmi & Konsultasi:</span>
-                <a
-                  href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo ${storeTitle}, saya ingin bertanya mengenai produk dan pesanan.`)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors"
-                >
-                  <span>WhatsApp: {phoneDisplay}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
+
+            <div className="text-xs space-y-1.5 text-zinc-300 pt-1">
+              <p>{address}</p>
+              <p>Email: {email}</p>
+              <p>Telepon / WA: {phoneDisplay}</p>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Katalog Produk */}
           <div>
-            <h4 className="text-stone-200 font-serif font-semibold mb-4 text-sm tracking-wide">
-              Koleksi & Kategori
-            </h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm">
+            <h3 className="text-white font-semibold mb-4 text-sm tracking-tight">
+              Katalog Produk
+            </h3>
+            <ul className="space-y-2.5 text-xs sm:text-sm text-zinc-300">
               <li>
-                <Link href="/products" className="hover:text-amber-200 transition-colors">
-                  Katalog Lengkap
+                <Link href="/products" className="hover:text-white transition-colors">
+                  Semua Produk
                 </Link>
               </li>
               <li>
-                <Link href="/categories/produk-digital-lisensi" className="hover:text-amber-200 transition-colors">
+                <Link href="/products?type=physical" className="hover:text-white transition-colors">
+                  Perangkat Fisik
+                </Link>
+              </li>
+              <li>
+                <Link href="/products?type=digital" className="hover:text-white transition-colors">
                   Produk Digital & Lisensi
                 </Link>
               </li>
               <li>
-                <Link href="/categories/elektronik-gadget" className="hover:text-amber-200 transition-colors">
-                  Elektronik & Gadget
+                <Link href="/products?featured=true" className="hover:text-white transition-colors">
+                  Pilihan Utama
                 </Link>
               </li>
               <li>
-                <Link href="/categories/aksesoris-workspace" className="hover:text-amber-200 transition-colors">
-                  Aksesoris & Workspace
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/jasa-layanan-profesional" className="hover:text-amber-200 transition-colors">
-                  Jasa & Layanan
+                <Link href="/categories/ergonomics-desk-setup" className="hover:text-white transition-colors">
+                  Ergonomi & Meja Kerja
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Help & Support */}
+          {/* Bantuan & Informasi */}
           <div>
-            <h4 className="text-stone-200 font-serif font-semibold mb-4 text-sm tracking-wide">
-              Layanan Pelanggan
-            </h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm">
+            <h3 className="text-white font-semibold mb-4 text-sm tracking-tight">
+              Layanan & Bantuan
+            </h3>
+            <ul className="space-y-2.5 text-xs sm:text-sm text-zinc-300">
               <li>
-                <Link href="/help" className="hover:text-amber-200 transition-colors">
-                  Pusat Bantuan & Tanya Jawab
+                <Link href="/help" className="hover:text-white transition-colors">
+                  Pusat Bantuan & FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/orders/track" className="hover:text-amber-200 transition-colors">
-                  Lacak Paket Pesanan
+                <Link href="/orders/track" className="hover:text-white transition-colors">
+                  Lacak Pesanan
                 </Link>
               </li>
               <li>
-                <Link href="/help#panduan-pembayaran" className="hover:text-amber-200 transition-colors">
+                <Link href="/help#panduan-pembayaran" className="hover:text-white transition-colors">
                   Panduan Pembayaran
                 </Link>
               </li>
               <li>
-                <Link href="/help#kebijakan-retur" className="hover:text-amber-200 transition-colors">
+                <Link href="/help#kebijakan-retur" className="hover:text-white transition-colors">
                   Ketentuan Retur & Garansi
                 </Link>
               </li>
               <li>
-                <Link href="/help#syarat-ketentuan" className="hover:text-amber-200 transition-colors">
-                  Syarat & Ketentuan Belanja
+                <Link href="/help#syarat-ketentuan" className="hover:text-white transition-colors">
+                  Syarat & Ketentuan
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Payment Methods */}
+          {/* Metode Pembayaran */}
           <div>
-            <h4 className="text-stone-200 font-serif font-semibold mb-4 text-sm tracking-wide">
-              Metode Pembayaran
-            </h4>
-            <p className="text-xs text-stone-400 mb-3 leading-relaxed">
-              Menerima pembayaran instan QRIS, Virtual Account, dan transfer bank manual.
+            <h3 className="text-white font-semibold mb-4 text-sm tracking-tight">
+              Pembayaran Didukung
+            </h3>
+            <p className="text-xs text-zinc-300 mb-3 leading-relaxed">
+              Mendukung QRIS terverifikasi, transfer Virtual Account, transfer bank manual, serta COD untuk produk fisik tertentu.
             </p>
             <div className="flex flex-wrap gap-1.5 text-xs">
-              <span className="bg-stone-900 border border-stone-800 text-stone-300 px-2.5 py-1 rounded-md font-medium">
-                QRIS
-              </span>
-              <span className="bg-stone-900 border border-stone-800 text-stone-300 px-2.5 py-1 rounded-md font-medium">
-                BCA
-              </span>
-              <span className="bg-stone-900 border border-stone-800 text-stone-300 px-2.5 py-1 rounded-md font-medium">
-                Mandiri
-              </span>
-              <span className="bg-stone-900 border border-stone-800 text-stone-300 px-2.5 py-1 rounded-md font-medium">
-                BNI VA
-              </span>
-              <span className="bg-stone-900 border border-stone-800 text-stone-300 px-2.5 py-1 rounded-md font-medium">
-                COD
-              </span>
+              {["QRIS", "BCA", "Mandiri", "BNI VA", "COD"].map((method) => (
+                <span
+                  key={method}
+                  className="bg-zinc-900 border border-zinc-700 text-zinc-200 px-2.5 py-1 rounded-md font-medium"
+                >
+                  {method}
+                </span>
+              ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-stone-800 flex items-center gap-1.5 text-xs text-amber-300/90 font-medium">
+            <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center gap-2 text-xs text-green-400 font-medium">
               <Lock className="w-3.5 h-3.5" />
-              <span>Transaksi Terenkripsi Aman</span>
+              <span>Transaksi Diverifikasi Admin</span>
             </div>
           </div>
         </div>
 
-        {/* Bottom copyright */}
-        <div className="border-t border-stone-800/80 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>© {new Date().getFullYear()} {storeTitle}. Dibuat dengan dedikasi penuh di Indonesia.</p>
+        {/* Bottom Copyright Bar */}
+        <div className="border-t border-zinc-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+          <p>© {new Date().getFullYear()} {storeTitle}. Jakarta, Indonesia.</p>
           <div className="flex items-center gap-6">
-            <Link href="/help#kebijakan-privasi" className="hover:text-stone-400 transition-colors">
+            <Link href="/help#kebijakan-privasi" className="hover:text-white transition-colors">
               Kebijakan Privasi
             </Link>
-            <Link href="/help#syarat-ketentuan" className="hover:text-stone-400 transition-colors">
+            <Link href="/help#syarat-ketentuan" className="hover:text-white transition-colors">
               Ketentuan Layanan
             </Link>
-            <Link href="/admin" className="hover:text-stone-400 transition-colors">
-              Area Pemilik Toko
+            <Link href="/admin" className="hover:text-white transition-colors">
+              Panel Admin
             </Link>
           </div>
         </div>

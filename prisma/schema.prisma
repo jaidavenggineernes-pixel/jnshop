@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // 1. Users
@@ -451,6 +452,15 @@ model StoreSetting {
   returnPolicy        String?
   geminiApiKey        String?
   aiModel             String?  @default("gemini-2.5-flash")
+
+  // 21.0 Email & QRIS Notification Settings
+  adminNotificationEmail String? @default("jaidav.enggineernes@gmail.com")
+  smtpHost               String? @default("smtp.gmail.com")
+  smtpPort               Int?    @default(587)
+  smtpUser               String?
+  smtpPass               String?
+  emailFrom              String?
+  resendApiKey           String?
 
   // 21.1 Homepage Hero CMS
   heroBadge           String?  @default("Kurasi Khusus • Toko Pribadi & Digital Studio")

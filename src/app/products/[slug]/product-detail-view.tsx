@@ -6,23 +6,17 @@ import { useRouter } from "next/navigation";
 import {
   Star,
   ShoppingBag,
-  Zap,
   Heart,
   Share2,
   CheckCircle,
   Truck,
   ShieldCheck,
   RotateCcw,
-  Sparkles,
-  ExternalLink,
   Plus,
   Minus,
   Binary,
-  MessageCircle,
   Check,
-  FileText,
-  Sliders,
-  HelpCircle,
+  MessageSquare,
 } from "lucide-react";
 import { formatRupiah, calculateDiscountPercentage } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
@@ -40,13 +34,11 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
   const { isWishlisted, toggleWishlist } = useWishlist();
 
   const [activeTab, setActiveTab] = useState<"desc" | "specs" | "shipping" | "reviews">("desc");
-
   const [selectedImage, setSelectedImage] = useState(
     product.images?.find((img: any) => img.isPrimary)?.url ||
       product.images?.[0]?.url ||
       "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80"
   );
-
   const [selectedVariant, setSelectedVariant] = useState(
     product.variants?.length > 0 ? product.variants[0] : null
   );
@@ -65,7 +57,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
     if (!isOutOfStock) {
       addItem(product, selectedVariant, quantity);
       setJustAdded(true);
-      setTimeout(() => setJustAdded(false), 2000);
+      setTimeout(() => setJustAdded(false), 1800);
     }
   };
 
@@ -80,16 +72,16 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
+      setTimeout(() => setCopiedLink(false), 1800);
     }
   };
 
-  const handleAskAI = () => {
+  const handleAskProduct = () => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("jnshop-open-ai", {
           detail: {
-            prompt: `Beri tahu saya spesifikasi utama dan keunggulan dari ${product.name}, apakah produk ini cocok untuk kebutuhan saya?`,
+            prompt: `Apa spesifikasi utama dan kecocokan produk ${product.name}?`,
           },
         })
       );
@@ -97,188 +89,187 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 space-y-12 pb-28 sm:pb-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-12 pb-32 sm:pb-16">
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 overflow-x-auto no-scrollbar">
-        <Link href="/" className="hover:text-blue-600 transition-colors whitespace-nowrap">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-zinc-600 overflow-x-auto no-scrollbar">
+        <Link href="/" className="hover:text-zinc-900 whitespace-nowrap">
           Beranda
         </Link>
-        <span>/</span>
-        <Link href="/products" className="hover:text-blue-600 transition-colors whitespace-nowrap">
+        <span aria-hidden="true">/</span>
+        <Link href="/products" className="hover:text-zinc-900 whitespace-nowrap">
           Katalog
         </Link>
-        <span>/</span>
+        <span aria-hidden="true">/</span>
         <Link
           href={`/categories/${product.category.slug}`}
-          className="hover:text-blue-600 transition-colors whitespace-nowrap"
+          className="hover:text-zinc-900 whitespace-nowrap"
         >
           {product.category.name}
         </Link>
-        <span>/</span>
-        <span className="text-slate-800 font-medium truncate max-w-xs">{product.name}</span>
+        <span aria-hidden="true">/</span>
+        <span className="text-zinc-900 font-semibold truncate max-w-xs">{product.name}</span>
       </nav>
 
-      {/* Main Product Info Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         {/* Gallery Column */}
         <div className="lg:col-span-7 space-y-4">
-          {/* Active Photo */}
-          <div className="relative aspect-4/3 w-full rounded-3xl overflow-hidden bg-slate-100 border border-slate-200/90 shadow-sm group">
+          <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200">
             <img
               src={selectedImage}
               alt={product.name}
-              className="w-full h-full object-cover transition-all duration-300 group-hover:scale-102"
+              className="w-full h-full object-cover"
             />
             {discountPercent > 0 && (
-              <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">
+              <span className="absolute top-3 left-3 bg-red-700 text-white text-xs font-bold px-2.5 py-1 rounded-md tabular-nums">
                 Diskon {discountPercent}%
               </span>
             )}
             <span
-              className={`absolute top-4 right-4 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-xl shadow-md backdrop-blur-md ${
-                product.isPhysical ? "bg-slate-900/80 text-white" : "bg-blue-600/90 text-white"
+              className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-md border ${
+                product.isPhysical
+                  ? "bg-white text-zinc-900 border-zinc-300"
+                  : "bg-green-50 text-green-800 border-green-200"
               }`}
             >
-              {product.isPhysical ? "📦 Produk Fisik" : "⚡ Produk Digital"}
+              {product.isPhysical ? "Produk Fisik" : "Produk Digital"}
             </span>
           </div>
 
-          {/* Thumbnails Row */}
           {product.images?.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
               {product.images.map((img: any) => (
                 <button
                   key={img.id}
+                  type="button"
                   onClick={() => setSelectedImage(img.url)}
-                  className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
+                  aria-label={`Tampilkan foto ${product.name}`}
+                  className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 shrink-0 transition-colors ${
                     selectedImage === img.url
-                      ? "border-blue-600 shadow-md ring-2 ring-blue-100"
-                      : "border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100"
+                      ? "border-green-800"
+                      : "border-zinc-200 hover:border-zinc-400 opacity-80 hover:opacity-100"
                   }`}
                 >
-                  <img src={img.url} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           )}
 
-          {/* Value Props & Guarantee Banner */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-            <div className="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-center gap-2.5">
-              <RotateCcw className="w-5 h-5 text-blue-600 shrink-0" />
-              <div>
-                <div className="text-[11px] font-bold text-slate-800">Garansi 7 Hari</div>
-                <div className="text-[10px] text-slate-400">Retur & Uang Kembali</div>
-              </div>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-              <div>
-                <div className="text-[11px] font-bold text-slate-800">100% Original</div>
-                <div className="text-[10px] text-slate-400">Jaminan Kualitas</div>
-              </div>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-center gap-2.5">
-              <Truck className="w-5 h-5 text-indigo-600 shrink-0" />
-              <div>
-                <div className="text-[11px] font-bold text-slate-800">Kirim Cepat</div>
-                <div className="text-[10px] text-slate-400">Bubble Wrap Gratis</div>
-              </div>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-center gap-2.5">
-              <CheckCircle className="w-5 h-5 text-violet-600 shrink-0" />
-              <div>
-                <div className="text-[11px] font-bold text-slate-800">Invoice Resmi</div>
-                <div className="text-[10px] text-slate-400">Bukti Bayar Sah</div>
-              </div>
-            </div>
+          {/* Guarantees Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            {[
+              { icon: RotateCcw, title: "Garansi 7 Hari", sub: "Retur sesuai S&K" },
+              { icon: ShieldCheck, title: "Produk Asli", sub: "Terverifikasi toko" },
+              {
+                icon: Truck,
+                title: product.isPhysical ? "Kemasan Aman" : "Akses Instan",
+                sub: product.isPhysical ? "Kurir tepercaya" : "Tautan siap pakai",
+              },
+              { icon: CheckCircle, title: "Invoice Resmi", sub: "Riwayat tercatat" },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="p-3 bg-zinc-50 border border-zinc-200 rounded-xl flex items-start gap-2.5"
+                >
+                  <Icon className="w-4 h-4 text-green-800 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-semibold text-zinc-900">{item.title}</div>
+                    <div className="text-[11px] text-zinc-600">{item.sub}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Product Details & Actions Column */}
+        {/* Details & Purchase Actions */}
         <div className="lg:col-span-5 space-y-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 text-xs">
               <Link
                 href={`/categories/${product.category.slug}`}
-                className="text-xs font-bold text-blue-600 uppercase tracking-wider hover:underline"
+                className="font-semibold text-green-800 hover:underline"
               >
                 {product.category.name}
               </Link>
-              <span className="text-slate-300">•</span>
-              <div className="flex items-center gap-1 text-xs text-amber-500 font-semibold">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-zinc-400" aria-hidden="true">•</span>
+              <div className="inline-flex items-center gap-1 text-zinc-700 font-semibold tabular-nums">
+                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                 <span>{product.rating?.toFixed(1) || "5.0"}</span>
-                <span className="text-slate-400 font-normal">
-                  ({product.reviews?.length || 1} ulasan)
+                <span className="text-zinc-600 font-normal">
+                  ({product.reviews?.length || 0} ulasan)
                 </span>
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight leading-snug">
               {product.name}
             </h1>
 
             {product.sku && (
-              <span className="text-xs text-slate-400 mt-1 block">SKU: {product.sku}</span>
+              <span className="text-xs font-mono text-zinc-600 mt-1.5 block">
+                SKU: {product.sku}
+              </span>
             )}
           </div>
 
-          {/* Price Section */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-baseline justify-between">
+          {/* Price Block */}
+          <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 flex items-baseline justify-between gap-3">
             <div>
-              <div className="text-xs text-slate-400">Harga Produk</div>
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="text-3xl font-black text-slate-900">
+              <div className="text-xs text-zinc-600 font-medium">Harga</div>
+              <div className="flex items-baseline gap-2.5 mt-0.5">
+                <span className="text-2xl sm:text-3xl font-bold text-zinc-900 tabular-nums">
                   {formatRupiah(effectivePrice)}
                 </span>
                 {discountPercent > 0 && (
-                  <span className="text-sm text-slate-400 line-through">
+                  <span className="text-sm text-zinc-600 line-through tabular-nums">
                     {formatRupiah(originalPrice)}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="text-right">
-              <span
-                className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                  availableStock > 0
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {availableStock > 0 ? `Tersedia: ${availableStock} unit` : "Stok Habis"}
-              </span>
-            </div>
+            <span
+              className={`text-xs font-semibold px-2.5 py-1 rounded-md border shrink-0 ${
+                availableStock > 0
+                  ? "bg-green-50 text-green-800 border-green-200"
+                  : "bg-red-50 text-red-800 border-red-200"
+              }`}
+            >
+              {availableStock > 0 ? `Stok ${availableStock}` : "Habis"}
+            </span>
           </div>
 
-          {/* Variants Selector (if any) */}
+          {/* Variants */}
           {product.variants?.length > 0 && (
-            <div className="space-y-2.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
                 Pilih Varian
-              </label>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map((v: any) => {
                   const isSelected = selectedVariant?.id === v.id;
-                  const isVarOutOfStock = v.stock <= 0;
+                  const isVarOut = v.stock <= 0;
                   return (
                     <button
                       key={v.id}
+                      type="button"
                       onClick={() => setSelectedVariant(v)}
-                      disabled={isVarOutOfStock}
-                      className={`px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                      disabled={isVarOut}
+                      className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold border transition-colors inline-flex items-center gap-1.5 ${
                         isSelected
-                          ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-600"
-                          : isVarOutOfStock
-                          ? "border-slate-200 bg-slate-100 text-slate-400 line-through cursor-not-allowed"
-                          : "border-slate-200 text-slate-700 hover:border-slate-300 bg-white"
+                          ? "border-green-800 bg-green-50 text-green-800"
+                          : isVarOut
+                          ? "border-zinc-200 bg-zinc-100 text-zinc-500 line-through"
+                          : "border-zinc-300 text-zinc-800 hover:border-zinc-900 bg-white"
                       }`}
                     >
                       <span>{v.name}</span>
                       {v.price && v.price !== product.price && (
-                        <span className="text-slate-400 text-[11px]">
+                        <span className="text-zinc-600 tabular-nums">
                           ({formatRupiah(v.price)})
                         </span>
                       )}
@@ -289,46 +280,51 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
             </div>
           )}
 
-          {/* Quantity Controls */}
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Jumlah Pembelian
+          {/* Quantity */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              Jumlah
             </span>
-            <div className="flex items-center border border-slate-200 bg-slate-50 rounded-xl p-1">
+            <div className="inline-flex items-center border border-zinc-300 bg-white rounded-lg overflow-hidden">
               <button
+                type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="p-1.5 rounded-lg text-slate-600 hover:bg-white hover:text-slate-900 transition-colors cursor-pointer"
                 disabled={quantity <= 1}
+                aria-label="Kurangi jumlah pembelian"
+                className="w-11 h-11 flex items-center justify-center text-zinc-700 hover:bg-zinc-100 disabled:opacity-40"
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="px-4 text-sm font-bold text-slate-900">{quantity}</span>
+              <span className="px-4 text-sm font-bold text-zinc-900 tabular-nums">{quantity}</span>
               <button
+                type="button"
                 onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
-                className="p-1.5 rounded-lg text-slate-600 hover:bg-white hover:text-slate-900 transition-colors cursor-pointer"
                 disabled={quantity >= availableStock}
+                aria-label="Tambah jumlah pembelian"
+                className="w-11 h-11 flex items-center justify-center text-zinc-700 hover:bg-zinc-100 disabled:opacity-40"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Desktop Action Buttons */}
-          <div className="space-y-3 pt-2">
+          {/* Primary Actions */}
+          <div className="space-y-3 pt-1">
             <div className="grid grid-cols-2 gap-3">
               <button
+                type="button"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className={`py-3 px-4 rounded-xl border font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`min-h-[48px] px-4 rounded-lg border font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
                   justAdded
-                    ? "border-emerald-700 bg-emerald-50 text-emerald-800"
-                    : "border-stone-300 text-stone-800 hover:bg-stone-100 disabled:opacity-50"
+                    ? "border-green-800 bg-green-50 text-green-800"
+                    : "border-zinc-300 bg-white text-zinc-900 hover:border-zinc-900 disabled:opacity-50"
                 }`}
               >
                 {justAdded ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-700" />
-                    <span>Ditambahkan!</span>
+                    <Check className="w-4 h-4" />
+                    <span>Masuk Keranjang</span>
                   </>
                 ) : (
                   <>
@@ -339,115 +335,90 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               </button>
 
               <button
+                type="button"
                 onClick={handleBuyNow}
                 disabled={isOutOfStock}
-                className="py-3 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs sm:text-sm shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="min-h-[48px] px-4 rounded-lg bg-zinc-900 hover:bg-green-800 text-white font-semibold text-sm disabled:opacity-50 transition-colors flex items-center justify-center"
               >
-                <Zap className="w-4 h-4" />
-                <span>Beli Sekarang</span>
+                Beli Sekarang
               </button>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              {/* Wishlist button */}
+            <div className="grid grid-cols-2 gap-2">
               <button
+                type="button"
                 onClick={() => toggleWishlist(product.id)}
-                className={`flex-1 py-2 px-3 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`min-h-[44px] px-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
                   wishlisted
-                    ? "border-amber-300 bg-amber-50 text-stone-900"
-                    : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                    ? "border-red-200 bg-red-50 text-red-800"
+                    : "border-zinc-200 text-zinc-700 hover:bg-zinc-50"
                 }`}
               >
-                <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-stone-900 text-stone-900" : ""}`} />
-                <span>{wishlisted ? "Tersimpan di Favorit" : "Simpan ke Favorit"}</span>
+                <Heart className={`w-4 h-4 ${wishlisted ? "fill-red-700 text-red-700" : ""}`} />
+                <span>{wishlisted ? "Tersimpan" : "Simpan"}</span>
               </button>
 
-              {/* Share button */}
               <button
+                type="button"
                 onClick={handleShare}
-                className="py-2 px-3 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                title="Bagikan Tautan Produk"
+                className="min-h-[44px] px-3 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>{copiedLink ? "Link Disalin!" : "Bagikan"}</span>
+                <Share2 className="w-4 h-4" />
+                <span>{copiedLink ? "Tautan Disalin" : "Bagikan"}</span>
               </button>
             </div>
 
-            {/* Ask Concierge directly about this product */}
             <button
               type="button"
-              onClick={handleAskAI}
-              className="w-full py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200/90 text-stone-800 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs group"
+              onClick={handleAskProduct}
+              className="w-full min-h-[44px] px-4 rounded-lg bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-900 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-700 group-hover:rotate-12 transition-transform" />
-              <span>Konsultasi dengan JNshop Concierge</span>
+              <MessageSquare className="w-4 h-4 text-green-800" />
+              <span>Tanya Spesifikasi Produk</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Interactive Tabs for Description, Specifications, Shipping & Reviews */}
-      <div className="bg-white/95 rounded-2xl border border-stone-200/90 shadow-sm overflow-hidden">
-        {/* Tab Headers */}
-        <div className="flex items-center border-b border-stone-100 overflow-x-auto no-scrollbar bg-stone-50/60 p-2 gap-1.5">
-          <button
-            onClick={() => setActiveTab("desc")}
-            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === "desc"
-                ? "bg-stone-900 text-stone-100 shadow-sm"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
-            }`}
-          >
-            Deskripsi Kurator
-          </button>
-          <button
-            onClick={() => setActiveTab("specs")}
-            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === "specs"
-                ? "bg-stone-900 text-stone-100 shadow-sm"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
-            }`}
-          >
-            Spesifikasi & Fitur
-          </button>
-          <button
-            onClick={() => setActiveTab("shipping")}
-            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === "shipping"
-                ? "bg-stone-900 text-stone-100 shadow-sm"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
-            }`}
-          >
-            Pengiriman & Garansi
-          </button>
-          <button
-            onClick={() => setActiveTab("reviews")}
-            className={`py-2 px-3.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === "reviews"
-                ? "bg-stone-900 text-stone-100 shadow-sm"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/70"
-            }`}
-          >
-            Ulasan Pembeli ({product.reviews?.length || 0})
-          </button>
+      {/* Tabs Section */}
+      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+        <div className="flex items-center border-b border-zinc-200 overflow-x-auto no-scrollbar bg-zinc-50 p-2 gap-1.5">
+          {[
+            { id: "desc", label: "Deskripsi" },
+            { id: "specs", label: "Spesifikasi" },
+            { id: "shipping", label: "Pengiriman & Garansi" },
+            { id: "reviews", label: `Ulasan (${product.reviews?.length || 0})` },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`min-h-[40px] px-4 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors ${
+                activeTab === tab.id
+                  ? "bg-zinc-900 text-white"
+                  : "text-zinc-700 hover:text-zinc-900 hover:bg-zinc-200/70"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Tab Contents */}
-        <div className="p-6 sm:p-10">
+        <div className="p-5 sm:p-8">
           {activeTab === "desc" && (
             <div className="space-y-6">
-              <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
+              <div className="text-zinc-700 leading-relaxed text-sm whitespace-pre-wrap max-w-3xl">
                 {product.description}
               </div>
 
               {!product.isPhysical && (
-                <div className="p-5 rounded-2xl bg-blue-50/80 border border-blue-200 text-blue-950 space-y-2">
-                  <h4 className="font-bold text-sm flex items-center gap-2 text-blue-900">
-                    <Binary className="w-4 h-4 text-blue-600" />
-                    Informasi Pemenuhan Produk Digital
-                  </h4>
-                  <p className="text-xs text-blue-800 leading-relaxed">
-                    Produk ini merupakan aset digital resmi. Tautan unduhan langsung dan lisensi aktivasi otomatis dapat diakses di halaman detail pesanan Anda setelah verifikasi pembayaran berhasil.
+                <div className="p-4 sm:p-5 rounded-xl bg-green-50 border border-green-200 text-green-900 space-y-1.5 max-w-3xl">
+                  <h3 className="font-bold text-sm flex items-center gap-2">
+                    <Binary className="w-4 h-4 text-green-800" />
+                    Pengiriman Produk Digital
+                  </h3>
+                  <p className="text-xs sm:text-sm leading-relaxed text-green-900">
+                    Tautan unduhan dan kunci aktivasi akan tersedia otomatis di halaman detail pesanan Anda setelah pembayaran dikonfirmasi.
                   </p>
                 </div>
               )}
@@ -456,114 +427,109 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
 
           {activeTab === "specs" && (
             <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Rincian Spesifikasi Produk</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between">
-                  <span className="text-slate-500">Kategori</span>
-                  <span className="font-semibold text-slate-900">{product.category.name}</span>
+              <h3 className="font-bold text-sm text-zinc-900">Rincian Produk</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                <div className="p-3.5 bg-zinc-50 rounded-lg border border-zinc-200 flex justify-between gap-3">
+                  <span className="text-zinc-600">Kategori</span>
+                  <span className="font-semibold text-zinc-900">{product.category.name}</span>
                 </div>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between">
-                  <span className="text-slate-500">Tipe Produk</span>
-                  <span className="font-semibold text-slate-900">
-                    {product.isPhysical ? "Fisik (Barang Dikirim Kurir)" : "Digital (Download Langsung)"}
+                <div className="p-3.5 bg-zinc-50 rounded-lg border border-zinc-200 flex justify-between gap-3">
+                  <span className="text-zinc-600">Format</span>
+                  <span className="font-semibold text-zinc-900">
+                    {product.isPhysical ? "Fisik (Dikirim Kurir)" : "Digital (Akses Online)"}
                   </span>
                 </div>
                 {product.sku && (
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between">
-                    <span className="text-slate-500">SKU / Kode Produk</span>
-                    <span className="font-semibold text-slate-900 font-mono">{product.sku}</span>
+                  <div className="p-3.5 bg-zinc-50 rounded-lg border border-zinc-200 flex justify-between gap-3">
+                    <span className="text-zinc-600">SKU</span>
+                    <span className="font-semibold text-zinc-900 font-mono">{product.sku}</span>
                   </div>
                 )}
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between">
-                  <span className="text-slate-500">Stok Tersedia</span>
-                  <span className="font-semibold text-emerald-600">{availableStock} Unit</span>
+                <div className="p-3.5 bg-zinc-50 rounded-lg border border-zinc-200 flex justify-between gap-3">
+                  <span className="text-zinc-600">Ketersediaan</span>
+                  <span className="font-semibold text-green-800 tabular-nums">
+                    {availableStock} Unit
+                  </span>
                 </div>
                 {selectedVariant && (
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between">
-                    <span className="text-slate-500">Varian Terpilih</span>
-                    <span className="font-semibold text-blue-600">{selectedVariant.name}</span>
+                  <div className="p-3.5 bg-zinc-50 rounded-lg border border-zinc-200 flex justify-between gap-3">
+                    <span className="text-zinc-600">Varian</span>
+                    <span className="font-semibold text-zinc-900">{selectedVariant.name}</span>
                   </div>
                 )}
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between">
-                  <span className="text-slate-500">Kondisi</span>
-                  <span className="font-semibold text-slate-900">100% Baru & Bergaransi</span>
-                </div>
               </div>
             </div>
           )}
 
           {activeTab === "shipping" && (
-            <div className="space-y-4 text-xs leading-relaxed text-slate-700">
-              <h3 className="font-bold text-sm text-slate-900">Informasi Pengiriman & Garansi Retur</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                  <h4 className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-                    <Truck className="w-4 h-4 text-blue-600" />
-                    Ekspedisi & Kurir Resmi
-                  </h4>
-                  <p className="text-slate-600 text-xs">
-                    Pengiriman produk fisik didukung oleh <strong>JNE Express</strong>, <strong>SiCepat</strong>, dan <strong>J&T Express</strong> ke seluruh wilayah Indonesia. Estimasi pengiriman Jabodetabek 1-2 hari kerja, Pulau Jawa 2-3 hari kerja, dan Luar Jawa 3-5 hari kerja.
-                  </p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                  <h4 className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-                    <RotateCcw className="w-4 h-4 text-emerald-600" />
-                    Garansi 7 Hari Pengembalian
-                  </h4>
-                  <p className="text-slate-600 text-xs">
-                    Anda berhak mengajukan retur barang atau pengembalian dana penuh (100% refund) apabila produk fisik yang diterima dalam kondisi rusak, cacat produksi, atau tidak sesuai pesanan dalam waktu 7 hari sejak paket diterima.
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div className="p-4 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
+                <h3 className="font-bold text-zinc-900 flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-green-800" />
+                  Ekspedisi Resmi
+                </h3>
+                <p className="text-zinc-600 leading-relaxed">
+                  Produk fisik dikirim dari Jakarta menggunakan JNE, SiCepat, atau J&T. Estimasi Jabodetabek 1-2 hari kerja dan luar daerah 2-5 hari kerja.
+                </p>
+              </div>
+              <div className="p-4 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
+                <h3 className="font-bold text-zinc-900 flex items-center gap-2">
+                  <RotateCcw className="w-4 h-4 text-green-800" />
+                  Garansi 7 Hari
+                </h3>
+                <p className="text-zinc-600 leading-relaxed">
+                  Berlaku untuk penukaran unit baru atau pengembalian dana jika barang diterima dalam kondisi rusak atau cacat produksi.
+                </p>
               </div>
             </div>
           )}
 
           {activeTab === "reviews" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">Ulasan & Rating Pelanggan</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Ulasan nyata dari pelanggan yang telah berbelanja di JNshop
+                  <h3 className="font-bold text-sm text-zinc-900">Ulasan Pembeli</h3>
+                  <p className="text-xs text-zinc-600 mt-0.5">
+                    Penilaian dari pelanggan terverifikasi JNshop
                   </p>
                 </div>
-                <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-xl text-amber-700 font-bold text-sm">
-                  <Star className="w-4 h-4 fill-amber-400" />
+                <div className="inline-flex items-center gap-1.5 bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-lg text-zinc-900 font-bold text-sm tabular-nums">
+                  <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                   <span>{product.rating?.toFixed(1) || "5.0"}</span>
-                  <span className="text-slate-400 font-normal">/ 5.0</span>
+                  <span className="text-zinc-600 font-normal">/ 5.0</span>
                 </div>
               </div>
 
               {product.reviews?.length === 0 ? (
-                <p className="text-xs text-slate-500 py-6 text-center">
-                  Belum ada ulasan untuk produk ini. Jadilah yang pertama memberikan ulasan!
+                <p className="text-sm text-zinc-600 py-6 text-center">
+                  Belum ada ulasan untuk produk ini.
                 </p>
               ) : (
                 <div className="space-y-3">
                   {product.reviews?.map((r: any) => (
-                    <div key={r.id} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-100 space-y-2">
-                      <div className="flex items-center justify-between">
+                    <div key={r.id} className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+                          <div className="w-7 h-7 rounded-md bg-zinc-900 text-white font-bold text-xs flex items-center justify-center">
                             {r.user?.name?.charAt(0) || "U"}
                           </div>
                           <div>
-                            <span className="font-bold text-xs text-slate-900">
+                            <span className="font-semibold text-xs text-zinc-900">
                               {r.user?.name || "Pelanggan Terverifikasi"}
                             </span>
-                            <span className="text-[10px] text-emerald-600 ml-2 font-medium">
-                              ✓ Terverifikasi
+                            <span className="text-[11px] text-green-800 ml-2 font-medium">
+                              Terverifikasi
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-0.5 text-amber-400">
+                        <div className="flex items-center gap-0.5">
                           {Array.from({ length: r.rating || 5 }).map((_, i) => (
-                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                            <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                           ))}
                         </div>
                       </div>
-                      {r.title && <h4 className="font-bold text-xs text-slate-900">{r.title}</h4>}
-                      <p className="text-xs text-slate-600 leading-relaxed">{r.comment}</p>
+                      {r.title && <h4 className="font-semibold text-xs text-zinc-900">{r.title}</h4>}
+                      <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed">{r.comment}</p>
                     </div>
                   ))}
                 </div>
@@ -575,11 +541,11 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
 
       {/* Related Products */}
       {relatedProducts?.length > 0 && (
-        <div className="space-y-6">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Produk Terkait Lainnya
+        <div className="space-y-5">
+          <h2 className="text-xl font-bold text-zinc-900 tracking-tight">
+            Produk Terkait
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {relatedProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -587,11 +553,11 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
         </div>
       )}
 
-      {/* Mobile Sticky Bottom Purchase Bar (Visible on Mobile only) */}
-      <div className="fixed bottom-12 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200/90 px-4 py-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+      {/* Non-colliding Mobile Purchase Bar anchored cleanly above 64px MobileBottomNav */}
+      <div className="fixed bottom-16 left-0 right-0 z-30 bg-white border-t border-zinc-200 px-4 py-2.5 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] sm:hidden flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] text-stone-500 uppercase font-medium">Total Harga</div>
-          <div className="text-base font-serif font-bold text-stone-900 truncate leading-tight">
+          <div className="text-[11px] text-zinc-600 font-medium">Harga</div>
+          <div className="text-base font-bold text-zinc-900 truncate tabular-nums">
             {formatRupiah(effectivePrice)}
           </div>
         </div>
@@ -601,12 +567,12 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
             type="button"
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+            aria-label="Tambahkan ke keranjang"
+            className={`w-11 h-11 rounded-lg border flex items-center justify-center transition-colors ${
               justAdded
-                ? "bg-emerald-700 border-emerald-700 text-white"
-                : "border-stone-300 text-stone-800 bg-stone-50"
+                ? "bg-green-800 border-green-800 text-white"
+                : "border-zinc-300 text-zinc-900 bg-zinc-50"
             }`}
-            title="Tambahkan ke Keranjang"
           >
             {justAdded ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
           </button>
@@ -615,10 +581,9 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
             type="button"
             onClick={handleBuyNow}
             disabled={isOutOfStock}
-            className="py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            className="min-h-[44px] px-5 rounded-lg bg-zinc-900 hover:bg-green-800 text-white font-semibold text-xs transition-colors"
           >
-            <Zap className="w-3.5 h-3.5" />
-            <span>Beli Sekarang</span>
+            Beli Sekarang
           </button>
         </div>
       </div>

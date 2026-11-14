@@ -1,25 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ShoppingBag,
-  CheckCircle,
   Truck,
-  Eye,
   ExternalLink,
   Search,
-  Filter,
   Check,
   X,
   MessageCircle,
   AlertTriangle,
   Mail,
   QrCode,
-  Copy,
+  Send,
+  UploadCloud,
+  CheckCircle2,
 } from "lucide-react";
 import { formatRupiah, formatDate } from "@/lib/utils";
-import { createAdminToCustomerQRISUrl } from "@/lib/notifications";
+import { createAdminToCustomerQRISUrl } from "@/lib/notification-links";
 
 interface AdminOrdersClientProps {
   initialOrders: any[];
@@ -31,31 +29,130 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
-  // Action modal states
   const [trackingNumber, setTrackingNumber] = useState("");
   const [courierName, setCourierName] = useState("SiCepat REG");
   const [loadingAction, setLoadingAction] = useState(false);
 
-  // Filter
-  const filteredOrders = orders.filter((o) => {
-    const matchTab =
-      activeTab === "ALL"
-        ? true
-        : activeTab === "WAITING_CONFIRMATION"
-        ? o.status === "WAITING_CONFIRMATION"
-        : activeTab === "PENDING_PAYMENT"
-        ? o.status === "PENDING_PAYMENT"
-        : activeTab === "PROCESSING"
-        ? o.status === "PROCESSING"
-        : activeTab === "SHIPPED"
-        ? o.status === "SHIPPED"
-        : activeTab === "DELIVERED"
-        ? o.status === "DELIVERED"
-        : true;
+  // Admin QRIS Email Response states
+  const [qrisFile, setQrisFile] = useState<File | null>(null);
+  const [qrisPreviewUrl, setQrisPreviewUrl] = useState<string | null>(null);
+  const [qrisExternalUrl, setQrisExternalUrl] = useState("");
+  const [qrisAdminMessage, setQrisAdminMessage] = useState("");
+  const [sendingQris, setSendingQris] = useState(false);
+  const [qrisFeedback, setQrisFeedback] = useState<{
+    type: "success" | "warning" | "error";
+    text: string;
+  } | null>(null);
 
+  const parseGatewayMeta = (order: any): Record<string, any> => {
+    const raw = order?.payments?.[0]?.paymentGatewayPayload;
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  };
+
+  const openManageOrderModal = (ord: any) => {
+    setSelectedOrder(ord);
+    setCourierName(ord.courierName || "SiCepat REG");
+    setQrisFile(null);
+    setQrisPreviewUrl(null);
+    setQrisExternalUrl("");
+    setQrisFeedback(null);
+    setQrisAdminMessage(
+      `Berikut kode QRIS resmi JNshop untuk pesanan #${ord.orderNumber} dengan nominal tepat ${formatRupiah(
+        ord.grandTotal
+      )}. Silakan pindai dan transfer tepat sesuai nominal tersebut.`
+    );
+  };
+
+  const handleSendQrisToCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrder) return;
+
+    setSendingQris(true);
+    setQrisFeedback(null);
+
+    try {
+      const formData = new FormData();
+      if (qrisFile) {
+        formData.append("qrisImage", qrisFile);
+      }
+      if (qrisExternalUrl.trim()) {
+        formData.append("qrisUrl", qrisExternalUrl.trim());
+      }
+      if (qrisAdminMessage.trim()) {
+        formData.append("adminMessage", qrisAdminMessage.trim());
+      }
+
+      const res = await fetch(`/api/admin/orders/${selectedOrder.id}/send-qris`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal mengirim kode QRIS ke pelanggan.");
+      }
+
+      const updateOrderPaymentPayload = (ord: any) => {
+        if (ord.id !== selectedOrder.id) return ord;
+        const payments = [...(ord.payments || [])];
+        if (payments[0]) {
+          payments[0] = {
+            ...payments[0],
+            paymentGatewayPayload: data.paymentGatewayPayload,
+          };
+        }
+        return { ...ord, payments };
+      };
+
+      setOrders((prev) => prev.map(updateOrderPaymentPayload));
+      setSelectedOrder((prev: any) => (prev ? updateOrderPaymentPayload(prev) : prev));
+      setQrisFile(null);
+      setQrisPreviewUrl(null);
+
+      if (data.emailSent) {
+        setQrisFeedback({
+          type: "success",
+          text: `Kode QRIS berhasil dikirim ke email ${selectedOrder.customerEmail} (via ${data.provider?.toUpperCase()}).`,
+        });
+      } else {
+        setQrisFeedback({
+          type: "warning",
+          text: `Data QRIS disimpan ke pesanan, namun email otomatis belum terkirim: ${
+            data.emailError || "SMTP/Resend belum dikonfigurasi."
+          } Atur SMTP di Pengaturan > Email atau klik tombol aplikasi email di bawah.`,
+        });
+      }
+    } catch (err: any) {
+      setQrisFeedback({
+        type: "error",
+        text: err?.message || "Terjadi kesalahan saat mengirim kode QRIS.",
+      });
+    } finally {
+      setSendingQris(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedOrder) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedOrder(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedOrder]);
+
+  const filteredOrders = orders.filter((o) => {
+    const matchTab = activeTab === "ALL" ? true : o.status === activeTab;
+
+    const q = search.toLowerCase();
     const matchSearch =
-      o.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
-      o.recipientName.toLowerCase().includes(search.toLowerCase()) ||
+      o.orderNumber.toLowerCase().includes(q) ||
+      o.recipientName.toLowerCase().includes(q) ||
       o.recipientPhone.includes(search);
 
     return matchTab && matchSearch;
@@ -145,7 +242,6 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
-      const data = await res.json();
       if (res.ok) {
         setOrders((prev) =>
           prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord))
@@ -162,40 +258,40 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING_PAYMENT":
-        return { label: "Menunggu Bayar", bg: "bg-amber-100 text-amber-800" };
+        return { label: "Menunggu Bayar", bg: "bg-amber-50 text-amber-800 border border-amber-200" };
       case "WAITING_CONFIRMATION":
-        return { label: "Perlu Verifikasi!", bg: "bg-blue-100 text-blue-800 animate-pulse font-bold" };
+        return {
+          label: "Perlu Verifikasi",
+          bg: "bg-amber-100 text-amber-900 border border-amber-300 font-bold",
+        };
       case "PAID":
-        return { label: "Lunas", bg: "bg-emerald-100 text-emerald-800" };
+        return { label: "Lunas", bg: "bg-green-50 text-green-800 border border-green-200" };
       case "PROCESSING":
-        return { label: "Diproses", bg: "bg-indigo-100 text-indigo-800" };
+        return { label: "Diproses", bg: "bg-zinc-100 text-zinc-900 border border-zinc-300" };
       case "SHIPPED":
-        return { label: "Dikirim", bg: "bg-teal-100 text-teal-800" };
+        return { label: "Dikirim", bg: "bg-zinc-900 text-white border border-zinc-900" };
       case "DELIVERED":
-        return { label: "Selesai", bg: "bg-emerald-100 text-emerald-800" };
+        return { label: "Selesai", bg: "bg-green-50 text-green-800 border border-green-200" };
       case "CANCELLED":
-        return { label: "Dibatalkan", bg: "bg-red-100 text-red-800" };
+        return { label: "Dibatalkan", bg: "bg-red-50 text-red-800 border border-red-200" };
       default:
-        return { label: status, bg: "bg-slate-100 text-slate-800" };
+        return { label: status, bg: "bg-zinc-100 text-zinc-800 border border-zinc-200" };
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Manajemen Pesanan
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Verifikasi transfer manual, input nomor resi ekspedisi, dan pantau status transaksi ({orders.length} total pesanan).
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight">
+          Manajemen Pesanan
+        </h1>
+        <p className="text-xs sm:text-sm text-zinc-600 mt-1">
+          Verifikasi transfer manual, input nomor resi ekspedisi, dan pantau transaksi ({orders.length} total pesanan).
+        </p>
       </div>
 
-      {/* Tabs & Search */}
-      <div className="bg-white rounded-3xl p-4 border border-slate-200/90 shadow-sm space-y-4">
+      {/* Filter & Search Bar */}
+      <div className="bg-white rounded-xl p-4 border border-zinc-200 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-semibold">
             {[
@@ -208,11 +304,12 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
             ].map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:bg-slate-100"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
                 }`}
               >
                 {tab.label}
@@ -226,31 +323,31 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
               placeholder="Cari no. invoice / nama..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-lg pl-9 pr-3 py-2 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-green-800/30"
             />
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-3.5" />
           </div>
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
+            <thead className="bg-zinc-50 text-zinc-600 uppercase tracking-wider font-semibold border-b border-zinc-200">
               <tr>
                 <th className="py-3.5 px-6">No. Pesanan</th>
-                <th className="py-3.5 px-4">Penerima & WhatsApp</th>
+                <th className="py-3.5 px-4">Penerima & Kontak</th>
                 <th className="py-3.5 px-4">Metode Bayar</th>
                 <th className="py-3.5 px-4">Total</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-6 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+            <tbody className="divide-y divide-zinc-200 font-medium text-zinc-700">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                  <td colSpan={6} className="py-12 text-center text-zinc-600">
                     Tidak ada pesanan yang sesuai dengan filter.
                   </td>
                 </tr>
@@ -259,20 +356,20 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
                   const badge = getStatusBadge(ord.status);
                   const payment = ord.payments?.[0];
                   return (
-                    <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-4 px-6 font-mono font-bold text-slate-900">
+                    <tr key={ord.id} className="hover:bg-zinc-50 transition-colors">
+                      <td className="py-4 px-6 font-mono font-bold text-zinc-900">
                         {ord.orderNumber}
-                        <span className="block text-[10px] text-slate-400 font-sans font-normal">
+                        <span className="block text-[11px] text-zinc-600 font-sans font-normal mt-0.5">
                           {formatDate(ord.createdAt)}
                         </span>
                       </td>
 
                       <td className="py-4 px-4">
-                        <span className="font-bold text-slate-900 block">{ord.recipientName}</span>
+                        <span className="font-bold text-zinc-900 block">{ord.recipientName}</span>
                         {ord.customerEmail && (
                           <a
                             href={`mailto:${ord.customerEmail}`}
-                            className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 mt-0.5 truncate max-w-[190px]"
+                            className="text-[11px] text-zinc-700 hover:text-zinc-900 hover:underline flex items-center gap-1 mt-0.5 truncate max-w-[190px]"
                           >
                             <Mail className="w-3 h-3 shrink-0" />
                             <span className="truncate">{ord.customerEmail}</span>
@@ -282,7 +379,7 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
                           href={`https://wa.me/${ord.recipientPhone.replace(/\D/g, "")}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1 mt-0.5"
+                          className="text-[11px] text-green-800 hover:underline flex items-center gap-1 mt-0.5"
                         >
                           <MessageCircle className="w-3 h-3 shrink-0" />
                           <span>{ord.recipientPhone}</span>
@@ -291,39 +388,37 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
 
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-semibold text-slate-800">
+                          <span className="font-semibold text-zinc-900">
                             {payment?.paymentMethod || "Transfer"}
                           </span>
                           {payment?.paymentMethod === "QRIS_INSTANT" && (
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                               QRIS Presisi
                             </span>
                           )}
                         </div>
                         {payment?.paymentProofUrl && (
-                          <span className="block text-[10px] text-blue-600 font-bold mt-0.5">
-                            ✓ Bukti Diunggah
+                          <span className="block text-[11px] text-green-800 font-semibold mt-0.5">
+                            Bukti Diunggah
                           </span>
                         )}
                       </td>
 
-                      <td className="py-4 px-4 font-black text-slate-900">
+                      <td className="py-4 px-4 font-bold text-zinc-900">
                         {formatRupiah(ord.grandTotal)}
                       </td>
 
                       <td className="py-4 px-4">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] ${badge.bg}`}>
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${badge.bg}`}>
                           {badge.label}
                         </span>
                       </td>
 
-                      <td className="py-4 px-6 text-right space-x-2">
+                      <td className="py-4 px-6 text-right">
                         <button
-                          onClick={() => {
-                            setSelectedOrder(ord);
-                            setCourierName(ord.courierName || "SiCepat REG");
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs transition-colors cursor-pointer"
+                          type="button"
+                          onClick={() => openManageOrderModal(ord)}
+                          className="min-h-[44px] px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-semibold text-xs transition-colors"
                         >
                           Kelola Pesanan
                         </button>
@@ -339,149 +434,316 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
 
       {/* Manage Order Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/60 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="manage-order-title"
+        >
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-7 space-y-6 border border-zinc-200 max-h-[90vh] overflow-y-auto shadow-lg">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
               <div>
-                <span className="text-xs text-slate-400">Detail & Pengelolaan:</span>
-                <h3 className="text-lg font-black text-slate-900 font-mono">
+                <span className="text-xs text-zinc-600">Detail & Pengelolaan</span>
+                <h3 id="manage-order-title" className="text-lg font-bold text-zinc-900 font-mono">
                   {selectedOrder.orderNumber}
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                aria-label="Tutup jendela detail pesanan"
+                className="w-11 h-11 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Status & Buyer Box */}
-            <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-zinc-50 p-4 rounded-xl border border-zinc-200">
               <div>
-                <span className="text-slate-400">Penerima & Kontak:</span>
-                <p className="font-bold text-slate-900 text-sm mt-0.5">
+                <span className="text-zinc-600">Penerima & Kontak</span>
+                <p className="font-bold text-zinc-900 text-sm mt-0.5">
                   {selectedOrder.recipientName}
                 </p>
                 {selectedOrder.customerEmail && (
-                  <p className="text-slate-600 flex items-center gap-1 mt-0.5 font-medium">
-                    <Mail className="w-3 h-3 text-blue-600" />
-                    <span>{selectedOrder.customerEmail}</span>
+                  <p className="text-zinc-700 flex items-center gap-1.5 mt-1 font-medium">
+                    <Mail className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                    <span className="truncate">{selectedOrder.customerEmail}</span>
                   </p>
                 )}
-                <p className="text-slate-600 flex items-center gap-1 mt-0.5">
-                  <MessageCircle className="w-3 h-3 text-emerald-600" />
+                <p className="text-zinc-700 flex items-center gap-1.5 mt-1">
+                  <MessageCircle className="w-3.5 h-3.5 text-green-800 shrink-0" />
                   <span>WhatsApp: {selectedOrder.recipientPhone}</span>
                 </p>
                 {selectedOrder.notes && (
-                  <p className="text-slate-500 mt-1 italic">&quot;{selectedOrder.notes}&quot;</p>
+                  <p className="text-zinc-600 mt-1.5 italic">&quot;{selectedOrder.notes}&quot;</p>
                 )}
               </div>
-              <div className="text-right">
-                <span className="text-slate-400">Status Saat Ini:</span>
+              <div className="sm:text-right">
+                <span className="text-zinc-600">Status Saat Ini</span>
                 <div className="mt-1">
                   <span
-                    className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                    className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                       getStatusBadge(selectedOrder.status).bg
                     }`}
                   >
                     {getStatusBadge(selectedOrder.status).label}
                   </span>
                 </div>
-                <div className="text-base font-black text-blue-600 mt-2">
+                <div className="text-base font-bold text-zinc-900 mt-2">
                   {formatRupiah(selectedOrder.grandTotal)}
                 </div>
               </div>
             </div>
 
-            {/* QRIS Exact Nominal Management Panel (Anti-Loss Protection) */}
-            {selectedOrder.payments?.[0]?.paymentMethod === "QRIS_INSTANT" && (
-              <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-amber-950 flex items-center gap-1.5">
-                    <QrCode className="w-4 h-4 text-amber-700" />
-                    Instruksi Pengiriman QRIS Nominal Tepat (Anti-Loss)
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 uppercase">
-                    Wajib Presisi
-                  </span>
-                </div>
-
-                <p className="text-stone-700 text-[11px] leading-relaxed">
-                  Pesanan ini menggunakan pembayaran <strong>QRIS</strong>. Kirimkan kode QRIS dengan nominal belanja presisi <strong>{formatRupiah(selectedOrder.grandTotal)}</strong> ke email pelanggan agar tidak terjadi selisih bayar atau kerugian nominal.
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/90 p-3 rounded-xl border border-amber-200/60">
-                  <div>
-                    <span className="text-[10px] text-stone-500 block">Email Pelanggan:</span>
-                    <span className="font-bold text-stone-900 text-xs flex items-center gap-1 mt-0.5 truncate">
-                      <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                      <span className="truncate">{selectedOrder.customerEmail || "Tidak ada email"}</span>
+            {/* QRIS Response & Email Dispatch Panel */}
+            {selectedOrder.payments?.[0]?.paymentMethod === "QRIS_INSTANT" && (() => {
+              const qrisMeta = parseGatewayMeta(selectedOrder);
+              return (
+                <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200 rounded-xl space-y-4 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                      <QrCode className="w-4 h-4 text-amber-800" />
+                      Respon & Kirim Kode QRIS ke Email Pelanggan
                     </span>
+                    {qrisMeta.qrisSentAt ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800 border border-green-300">
+                        QRIS Sudah Dikirim
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                        Menunggu Kirim QRIS
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <span className="text-[10px] text-stone-500 block">Nominal Tagihan Tepat:</span>
-                    <span className="font-black text-blue-700 text-sm font-mono mt-0.5 block">
-                      {formatRupiah(selectedOrder.grandTotal)}
-                    </span>
-                  </div>
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                  <a
-                    href={createAdminToCustomerQRISUrl({
-                      orderNumber: selectedOrder.orderNumber,
-                      recipientName: selectedOrder.recipientName,
-                      recipientPhone: selectedOrder.recipientPhone,
-                      customerEmail: selectedOrder.customerEmail,
-                      grandTotal: selectedOrder.grandTotal,
-                    })}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Kirim QRIS via WhatsApp</span>
-                  </a>
-
-                  {selectedOrder.customerEmail && (
-                    <a
-                      href={`mailto:${selectedOrder.customerEmail}?subject=${encodeURIComponent(
-                        `Instruksi Pembayaran QRIS #${selectedOrder.orderNumber} - JNshop`
-                      )}&body=${encodeURIComponent(
-                        `Halo Kak ${selectedOrder.recipientName},\n\nTerima kasih telah berbelanja di JNshop!\nBerikut rincian pesanan Anda:\n• No. Pesanan: ${selectedOrder.orderNumber}\n• Nominal Belanja Tepat: ${formatRupiah(selectedOrder.grandTotal)}\n\nSilakan lakukan scan & transfer QRIS dengan nominal tepat ${formatRupiah(selectedOrder.grandTotal)}.\n\nSalam,\nAdmin JNshop (+62 851-9121-9129)`
-                      )}`}
-                      className="flex-1 py-2 px-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
-                    >
-                      <Mail className="w-3.5 h-3.5" />
-                      <span>Kirim QRIS via Email</span>
-                    </a>
+                  {/* Admin Email Alert Status */}
+                  {qrisMeta.adminEmailStatus === "SENT" ? (
+                    <div className="p-2.5 rounded-lg bg-green-50 border border-green-200 text-[11px] text-green-900 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-800 shrink-0" />
+                      <span>
+                        Notifikasi otomatis pesanan ini telah dikirim ke email admin:{" "}
+                        <strong>{qrisMeta.adminEmailTo || "jaidav.enggineernes@gmail.com"}</strong>
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-lg bg-white border border-amber-300 text-[11px] text-amber-950 flex flex-wrap items-center justify-between gap-2">
+                      <span>
+                        Notifikasi email otomatis belum aktif{" "}
+                        {qrisMeta.adminEmailError ? `(${qrisMeta.adminEmailError})` : "(SMTP belum diatur)"}.
+                      </span>
+                      <Link
+                        href="/admin/settings?tab=email"
+                        className="font-bold text-green-800 underline shrink-0"
+                      >
+                        Atur Email SMTP
+                      </Link>
+                    </div>
                   )}
+
+                  {/* Summary Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3 rounded-lg border border-amber-200">
+                    <div>
+                      <span className="text-[11px] text-zinc-600 block">Email Tujuan Pelanggan</span>
+                      <span className="font-bold text-zinc-900 text-xs flex items-center gap-1.5 mt-0.5 truncate">
+                        <Mail className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                        <span className="truncate">{selectedOrder.customerEmail || "Tidak ada email"}</span>
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-zinc-600 block">Nominal Tagihan Tepat</span>
+                      <span className="font-bold text-zinc-900 text-sm font-mono mt-0.5 block">
+                        {formatRupiah(selectedOrder.grandTotal)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {selectedOrder.notes && (
+                    <div className="bg-white p-3 rounded-lg border border-amber-200 space-y-1">
+                      <span className="text-[11px] font-bold text-amber-900 block">
+                        Pesan Tambahan dari Pelanggan:
+                      </span>
+                      <p className="text-zinc-900 whitespace-pre-wrap">{selectedOrder.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Already Sent Preview */}
+                  {qrisMeta.qrisSentAt && qrisMeta.qrisImageUrl && (
+                    <div className="p-3 bg-white rounded-lg border border-green-200 flex items-center gap-3">
+                      <img
+                        src={qrisMeta.qrisImageUrl}
+                        alt="QRIS terkirim"
+                        className="w-16 h-16 object-contain rounded border border-zinc-200 bg-zinc-50 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-bold text-green-800">
+                          QRIS terakhir dikirim pada {formatDate(qrisMeta.qrisSentAt)}
+                        </p>
+                        {qrisMeta.qrisAdminMessage && (
+                          <p className="text-zinc-600 truncate mt-0.5">{qrisMeta.qrisAdminMessage}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Direct Send QRIS Form */}
+                  <form onSubmit={handleSendQrisToCustomer} className="space-y-3 bg-white p-3.5 rounded-lg border border-amber-200">
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-800 mb-1.5">
+                        1. Upload Foto Kode QRIS Sesuai Nominal ({formatRupiah(selectedOrder.grandTotal)})
+                      </label>
+                      <label
+                        htmlFor="admin-qris-file"
+                        className="flex items-center justify-center gap-2 p-3 border border-dashed border-zinc-300 hover:border-green-800 rounded-lg bg-zinc-50 cursor-pointer text-xs font-medium text-zinc-800"
+                      >
+                        {qrisPreviewUrl ? (
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={qrisPreviewUrl}
+                              alt="Pratinjau QRIS"
+                              className="w-14 h-14 object-contain rounded border border-zinc-200 bg-white"
+                            />
+                            <span className="text-xs font-semibold text-green-800">
+                              {qrisFile?.name} (Klik untuk ganti)
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-4 h-4 text-zinc-700" />
+                            <span>Pilih Gambar QRIS (JPG / PNG / WEBP)</span>
+                          </>
+                        )}
+                        <input
+                          id="admin-qris-file"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0] || null;
+                            setQrisFile(f);
+                            setQrisPreviewUrl(f ? URL.createObjectURL(f) : null);
+                          }}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+
+                    <div>
+                      <label htmlFor="admin-qris-url" className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        Atau Tautan Gambar/Halaman QRIS (Opsional)
+                      </label>
+                      <input
+                        id="admin-qris-url"
+                        type="url"
+                        value={qrisExternalUrl}
+                        onChange={(e) => setQrisExternalUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full min-h-[38px] bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-1.5 text-xs text-zinc-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="admin-qris-msg" className="block text-[11px] font-bold text-zinc-800 mb-1">
+                        2. Pesan Tambahan untuk Pelanggan
+                      </label>
+                      <textarea
+                        id="admin-qris-msg"
+                        rows={2}
+                        value={qrisAdminMessage}
+                        onChange={(e) => setQrisAdminMessage(e.target.value)}
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-2.5 text-xs text-zinc-900"
+                      />
+                    </div>
+
+                    {qrisFeedback && (
+                      <div
+                        className={`p-2.5 rounded-lg text-[11px] font-medium border ${
+                          qrisFeedback.type === "success"
+                            ? "bg-green-50 border-green-200 text-green-900"
+                            : qrisFeedback.type === "warning"
+                            ? "bg-amber-50 border-amber-300 text-amber-950"
+                            : "bg-red-50 border-red-200 text-red-900"
+                        }`}
+                      >
+                        {qrisFeedback.text}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={sendingQris || (!qrisFile && !qrisExternalUrl.trim() && !qrisAdminMessage.trim())}
+                      className="w-full min-h-[44px] py-2 px-4 rounded-lg bg-green-800 hover:bg-green-900 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>
+                        {sendingQris
+                          ? "Mengirim Kode QRIS ke Email Pelanggan..."
+                          : `Kirim Kode QRIS ke ${selectedOrder.customerEmail || "Email Pelanggan"}`}
+                      </span>
+                    </button>
+                  </form>
+
+                  {/* Manual Fallback Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <a
+                      href={createAdminToCustomerQRISUrl({
+                        orderNumber: selectedOrder.orderNumber,
+                        recipientName: selectedOrder.recipientName,
+                        recipientPhone: selectedOrder.recipientPhone,
+                        customerEmail: selectedOrder.customerEmail,
+                        grandTotal: selectedOrder.grandTotal,
+                      })}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 min-h-[44px] py-2 px-3 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-900 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle className="w-4 h-4 text-green-800" />
+                      <span>Kabari via WhatsApp</span>
+                    </a>
+
+                    {selectedOrder.customerEmail && (
+                      <a
+                        href={`mailto:${selectedOrder.customerEmail}?subject=${encodeURIComponent(
+                          `Kode QRIS Pembayaran #${selectedOrder.orderNumber} (${formatRupiah(
+                            selectedOrder.grandTotal
+                          )}) - JNshop`
+                        )}&body=${encodeURIComponent(
+                          `Halo ${selectedOrder.recipientName},\n\nTerima kasih telah berbelanja di JNshop.\nBerikut rincian pesanan Anda:\n- No. Pesanan: ${
+                            selectedOrder.orderNumber
+                          }\n- Nominal Belanja Tepat: ${formatRupiah(
+                            selectedOrder.grandTotal
+                          )}\n\nTerlampir kode QRIS resmi JNshop untuk nominal tersebut.\n\nSalam,\nAdmin JNshop (+62 851-9121-9129)`
+                        )}`}
+                        className="flex-1 min-h-[44px] py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Mail className="w-4 h-4" />
+                        <span>Buka Aplikasi Email (Manual)</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Payment Proof Verification Box */}
             {selectedOrder.payments?.[0]?.paymentProofUrl && (
-              <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-amber-900 flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-xl space-y-3 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-zinc-900 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-800" />
                     Bukti Transfer yang Diunggah Pelanggan
                   </span>
                   <a
                     href={selectedOrder.payments[0].paymentProofUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-blue-600 font-semibold underline flex items-center gap-1"
+                    className="text-green-800 font-semibold hover:underline flex items-center gap-1 min-h-[44px] px-1"
                   >
                     <span>Buka Foto Asli</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
 
-                <div className="w-full max-h-48 rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center">
+                <div className="w-full max-h-48 rounded-lg overflow-hidden bg-zinc-900 flex items-center justify-center">
                   <img
                     src={selectedOrder.payments[0].paymentProofUrl}
                     alt="Bukti Transfer"
@@ -491,9 +753,10 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
 
                 {selectedOrder.status === "WAITING_CONFIRMATION" && (
                   <button
+                    type="button"
                     onClick={() => handleVerifyPayment(selectedOrder.id)}
                     disabled={loadingAction}
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full min-h-[44px] py-2.5 rounded-lg bg-green-800 hover:bg-green-900 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Check className="w-4 h-4" />
                     <span>Setujui & Verifikasi Pembayaran Ini</span>
@@ -502,55 +765,56 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
               </div>
             )}
 
-            {/* Input Resi Tracking (for Processing Orders) */}
+            {/* Input Resi Tracking */}
             {["PAID", "PROCESSING"].includes(selectedOrder.status) && (
-              <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-3 text-xs">
-                <span className="font-bold text-blue-900 flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-blue-600" />
+              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-xl space-y-3 text-xs">
+                <span className="font-bold text-zinc-900 flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-zinc-700" />
                   Input Nomor Resi Pengiriman
                 </span>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <input
                     type="text"
                     placeholder="Ekspedisi (SiCepat / JNE / J&T)"
                     value={courierName}
                     onChange={(e) => setCourierName(e.target.value)}
-                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
+                    className="min-h-[44px] bg-white border border-zinc-200 rounded-lg px-3 py-2 text-xs text-zinc-900"
                   />
                   <input
                     type="text"
                     placeholder="Nomor Resi Resmi..."
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value.toUpperCase())}
-                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono"
+                    className="min-h-[44px] bg-white border border-zinc-200 rounded-lg px-3 py-2 text-xs font-mono text-zinc-900"
                   />
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => handleAddTracking(selectedOrder.id)}
                   disabled={loadingAction || !trackingNumber.trim()}
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full min-h-[44px] py-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Truck className="w-4 h-4" />
-                  <span>Kirim Pesanan & Kirim Resi ke Pelanggan</span>
+                  <span>Simpan Resi & Tandai Dikirim</span>
                 </button>
               </div>
             )}
 
             {/* Ordered Items List */}
             <div className="space-y-2 text-xs">
-              <span className="font-bold text-slate-800 block">Daftar Produk:</span>
-              <div className="divide-y divide-slate-100 max-h-40 overflow-y-auto border border-slate-100 rounded-xl p-2 bg-slate-50">
+              <span className="font-bold text-zinc-900 block">Daftar Produk</span>
+              <div className="divide-y divide-zinc-200 max-h-40 overflow-y-auto border border-zinc-200 rounded-xl px-3 bg-zinc-50">
                 {selectedOrder.items.map((item: any) => (
-                  <div key={item.id} className="py-2 flex items-center justify-between">
+                  <div key={item.id} className="py-2.5 flex items-center justify-between gap-2">
                     <div>
-                      <span className="font-bold text-slate-900">{item.productName}</span>
-                      <span className="text-slate-500 block">
-                        Qty: {item.quantity} × {formatRupiah(item.productPrice)}
+                      <span className="font-bold text-zinc-900">{item.productName}</span>
+                      <span className="text-zinc-600 block">
+                        Qty: {item.quantity} x {formatRupiah(item.productPrice)}
                       </span>
                     </div>
-                    <span className="font-extrabold text-slate-900">
+                    <span className="font-bold text-zinc-900 shrink-0">
                       {formatRupiah(item.subtotal)}
                     </span>
                   </div>
@@ -558,19 +822,23 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
               </div>
             </div>
 
-            {/* Change Status Fast Actions */}
-            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400">Ubah Status Cepat:</span>
+            {/* Fast Actions */}
+            <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-zinc-600">Ubah Status Cepat:</span>
                 <button
+                  type="button"
                   onClick={() => handleUpdateStatus(selectedOrder.id, "DELIVERED")}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold"
+                  disabled={loadingAction}
+                  className="min-h-[44px] px-3 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-800 border border-green-200 font-semibold"
                 >
                   Selesai
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleUpdateStatus(selectedOrder.id, "CANCELLED")}
-                  className="px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-800 font-bold"
+                  disabled={loadingAction}
+                  className="min-h-[44px] px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 font-semibold"
                 >
                   Batalkan
                 </button>
@@ -579,7 +847,7 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
               <Link
                 href={`/orders/${selectedOrder.orderNumber}`}
                 target="_blank"
-                className="text-blue-600 font-bold hover:underline flex items-center gap-1"
+                className="min-h-[44px] px-2 text-green-800 font-semibold hover:underline inline-flex items-center gap-1"
               >
                 <span>Buka Invoice Publik</span>
                 <ExternalLink className="w-3.5 h-3.5" />

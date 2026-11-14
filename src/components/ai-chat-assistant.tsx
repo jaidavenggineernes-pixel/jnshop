@@ -1,22 +1,19 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  Sparkles,
   X,
   Send,
   MessageCircle,
   ExternalLink,
-  Bot,
-  User,
   ShoppingBag,
   RefreshCw,
   HelpCircle,
-  ArrowRight,
-  Zap,
   Check,
+  MessageSquare,
 } from "lucide-react";
-import Link from "next/link";
 import { formatRupiah } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
 
@@ -37,13 +34,12 @@ interface Message {
   sender: "user" | "assistant";
   text: string;
   timestamp: Date;
-  source?: "gemini" | "intelligent-local";
   recommendedProducts?: RecommendedProduct[];
   actionSuggestions?: string[];
-  isTyping?: boolean;
 }
 
 export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
+  const pathname = usePathname();
   const { addItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -53,107 +49,58 @@ export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
   const cleanWa = (storeSetting?.whatsappNumber || "6285191219129").replace(/\D/g, "");
   const storeTitle = storeSetting?.storeName || "JNshop";
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "initial-1",
-      sender: "assistant",
-      text: "Halo! Selamat datang di JNshop. 😊 Saya asisten belanja personal Anda di sini. Ada yang bisa saya bantu terkait ukuran laptop stand, tipe switch keyboard, klaim lisensi produk digital, atau rekomendasi sesuai budget belanja Anda?",
-      timestamp: new Date(),
-      source: "intelligent-local",
-      actionSuggestions: [
-        "💻 Stand muat MacBook 16\"?",
-        "⌨️ Beda Red vs Brown Switch",
-        "🎟️ Kupon Diskon Aktif",
-        "🚚 Garansi Retur 7 Hari",
-      ],
-    },
-  ]);
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const initialMessage: Message = {
+    id: "initial-1",
+    sender: "assistant",
+    text: `Halo. Ada pertanyaan seputar spesifikasi produk ${storeTitle}, kompatibilitas perangkat, atau status lisensi digital?`,
+    timestamp: new Date(),
+    actionSuggestions: [
+      "Rekomendasi laptop stand",
+      "Beda switch keyboard mekanikal",
+      "Info kupon diskon aktif",
+      "Garansi dan retur barang",
+    ],
   };
+
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      scrollToBottom();
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen, loading]);
 
-  // Listen to global open AI event from product detail page or anywhere
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   useEffect(() => {
     const handleCustomOpen = (event: any) => {
       setIsOpen(true);
       if (event.detail?.prompt) {
         setTimeout(() => {
           handleSendMessage(event.detail.prompt);
-        }, 200);
+        }, 120);
       }
     };
 
     window.addEventListener("jnshop-open-ai", handleCustomOpen);
-    return () => {
-      window.removeEventListener("jnshop-open-ai", handleCustomOpen);
-    };
+    return () => window.removeEventListener("jnshop-open-ai", handleCustomOpen);
   }, [messages, loading]);
 
-  // Stream text word-by-word into message to deliver authentic real-time AI feel
-  const streamBotResponse = (
-    fullText: string,
-    meta: {
-      source?: "gemini" | "intelligent-local";
-      recommendedProducts?: RecommendedProduct[];
-      actionSuggestions?: string[];
-    }
-  ) => {
-    const messageId = `ai-${Date.now()}`;
-    const words = fullText.split(" ");
-    let currentWordIndex = 0;
-
-    // Create placeholder message
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: messageId,
-        sender: "assistant",
-        text: words[0] || "",
-        timestamp: new Date(),
-        source: meta.source,
-        recommendedProducts: meta.recommendedProducts,
-        actionSuggestions: meta.actionSuggestions,
-        isTyping: true,
-      },
-    ]);
-
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-    }
-
-    typingIntervalRef.current = setInterval(() => {
-      currentWordIndex++;
-      if (currentWordIndex >= words.length) {
-        if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-        // Mark typing finished
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === messageId ? { ...m, text: fullText, isTyping: false } : m
-          )
-        );
-      } else {
-        const partialText = words.slice(0, currentWordIndex + 1).join(" ");
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === messageId ? { ...m, text: partialText } : m
-          )
-        );
-      }
-    }, 28);
-  };
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleSendMessage = async (customPrompt?: string) => {
-    const textToSend = customPrompt || input.trim();
+    const textToSend = (customPrompt ?? input).trim();
     if (!textToSend || loading) return;
 
     const userMessage: Message = {
@@ -163,48 +110,50 @@ export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
       timestamp: new Date(),
     };
 
+    const nextHistory = [...messages, userMessage].map((m) => ({
+      role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.text,
+    }));
+
     setMessages((prev) => [...prev, userMessage]);
     if (!customPrompt) setInput("");
     setLoading(true);
 
     try {
-      const history = messages
-        .filter((m) => !m.isTyping)
-        .map((m) => ({
-          role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
-          content: m.text,
-        }));
-      history.push({ role: "user", content: textToSend });
-
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: nextHistory }),
       });
 
       if (!res.ok) {
-        throw new Error("AI request failed");
+        throw new Error("Gagal mengambil jawaban");
       }
 
       const data = await res.json();
       const replyText =
         data.reply ||
-        "Maaf, saya sedang memproses terlalu banyak permintaan. Silakan tanyakan kembali!";
+        "Maaf, silakan hubungi WhatsApp toko untuk informasi lebih lanjut.";
 
-      streamBotResponse(replyText, {
-        source: data.source,
-        recommendedProducts: data.recommendedProducts,
-        actionSuggestions: data.actionSuggestions,
-      });
-    } catch (e) {
       setMessages((prev) => [
         ...prev,
         {
-          id: `ai-err-${Date.now()}`,
+          id: `asst-${Date.now()}`,
           sender: "assistant",
-          text: "Maaf, terjadi gangguan sesaat. Anda juga bisa langsung chat dengan Admin via WhatsApp di tombol bawah ini.",
+          text: replyText,
           timestamp: new Date(),
-          source: "intelligent-local",
+          recommendedProducts: data.recommendedProducts || [],
+          actionSuggestions: data.actionSuggestions || [],
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          sender: "assistant",
+          text: `Maaf, layanan pencari produk sedang sibuk. Silakan hubungi WhatsApp resmi di +${cleanWa}.`,
+          timestamp: new Date(),
         },
       ]);
     } finally {
@@ -212,7 +161,7 @@ export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
     }
   };
 
-  const handleAddToCartQuick = (prod: RecommendedProduct) => {
+  const handleQuickAddCart = (prod: RecommendedProduct) => {
     addItem(
       {
         id: prod.id,
@@ -220,336 +169,184 @@ export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
         slug: prod.slug,
         price: prod.price,
         discountPrice: prod.discountPrice,
-        isPhysical: prod.isPhysical,
         stock: prod.stock,
-        images: prod.imageUrl ? [{ url: prod.imageUrl }] : [],
+        isPhysical: prod.isPhysical,
+        images: [{ url: prod.imageUrl || "/placeholder.png", isPrimary: true }],
       },
-      null,
+      undefined,
       1
     );
-
     setAddedProductId(prod.id);
-    setTimeout(() => setAddedProductId(null), 2000);
+    setTimeout(() => setAddedProductId(null), 1500);
   };
-
-  // Convert markdown links [Text](/url) into clickable Next Links
-  const renderMessageContent = (text: string) => {
-    const parts = [];
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    let lastIndex = 0;
-    let match;
-
-    while ((match = linkRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
-      }
-      const label = match[1];
-      const url = match[2];
-      parts.push(
-        <Link
-          key={`${url}-${match.index}`}
-          href={url}
-          onClick={() => {
-            if (url.startsWith("/products/") || url.startsWith("/cart") || url.startsWith("/checkout")) {
-              setIsOpen(false);
-            }
-          }}
-          className="text-blue-600 font-bold underline underline-offset-2 hover:text-blue-800"
-        >
-          {label}
-        </Link>
-      );
-      lastIndex = linkRegex.lastIndex;
-    }
-
-    if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
-    }
-
-    return (
-      <div className="whitespace-pre-wrap leading-relaxed text-xs sm:text-sm">
-        {parts.map((p, i) => (typeof p === "string" ? <span key={i}>{p}</span> : p))}
-      </div>
-    );
-  };
-
-  // Extract latest dynamic suggestions from last assistant message
-  const lastAssistantMsg = [...messages].reverse().find((m) => m.sender === "assistant");
-  const activeSuggestions = lastAssistantMsg?.actionSuggestions || [
-    "🔥 Produk Terlaris",
-    "💻 Laptop stand muat 16 inch?",
-    "🎟️ Kupon Diskon yang Aktif",
-  ];
 
   return (
     <>
-      {/* Floating Trigger Button (Positioned safely above mobile bottom bar) */}
+      {/* Desktop-only unobtrusive support trigger; on mobile accessible via /help and Product page */}
       {!isOpen && (
-        <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
-          <button
-            onClick={() => setIsOpen(true)}
-            className="ai-floating-btn flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-full bg-[#1c1917] hover:bg-stone-800 text-[#faf9f6] border border-stone-700 font-bold text-xs sm:text-sm shadow-xl hover:scale-103 active:scale-95 transition-all cursor-pointer group"
-          >
-            <div className="relative">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 group-hover:rotate-12 transition-transform" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400"></span>
-            </div>
-            <span className="tracking-wide">Asisten Toko</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-label="Buka panduan tanya produk"
+          className="hidden sm:inline-flex fixed bottom-5 right-5 z-40 items-center gap-2 px-4 min-h-[44px] rounded-lg bg-zinc-900 hover:bg-green-800 text-white border border-zinc-700 shadow-lg transition-colors text-xs font-semibold"
+        >
+          <MessageSquare className="w-4 h-4 text-green-400" />
+          <span>Tanya Produk</span>
+        </button>
       )}
 
-      {/* Responsive Chat Modal (Native Bottom Sheet on Mobile, Floating Card on Desktop) */}
+      {/* Assistant Dialog Panel */}
       {isOpen && (
-        <div className="fixed inset-x-0 bottom-0 sm:bottom-6 sm:right-6 sm:inset-x-auto z-50 w-full sm:w-96 md:w-[420px] h-[92vh] sm:h-[580px] bg-[#faf9f6] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Panduan Produk JNshop"
+          className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[400px] h-[540px] max-h-[82vh] bg-white rounded-xl shadow-2xl border border-zinc-300 flex flex-col overflow-hidden z-50"
+        >
           {/* Header */}
-          <div className="p-4 bg-[#1c1917] text-[#faf9f6] flex flex-col shrink-0 border-b border-stone-800">
-            {/* Mobile Sheet Handle */}
-            <div className="w-10 h-1 bg-stone-700 rounded-full mx-auto sm:hidden mb-2.5" />
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-stone-800 flex items-center justify-center text-amber-300 border border-stone-700 shadow-inner">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 font-bold text-sm leading-tight text-white">
-                    <span>JNshop Concierge</span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-stone-400 mt-0.5">
-                    <span>Asisten Belanja Personal • Ramah & Sigap</span>
-                  </div>
-                </div>
+          <div className="bg-zinc-900 text-white px-4 py-3.5 flex items-center justify-between border-b border-zinc-800">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-green-800 text-white flex items-center justify-center shrink-0">
+                <HelpCircle className="w-4 h-4" />
               </div>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() =>
-                    setMessages([
-                      {
-                        id: `res-${Date.now()}`,
-                        sender: "assistant",
-                        text: "Percakapan telah direset. Silakan tanyakan seputar produk, spesifikasi, atau promo yang Anda minati! 😊",
-                        timestamp: new Date(),
-                        source: "intelligent-local",
-                        actionSuggestions: [
-                          "💻 Stand muat MacBook 16\"?",
-                          "⌨️ Beda Red vs Brown Switch",
-                          "🎟️ Kupon Diskon Aktif",
-                        ],
-                      },
-                    ])
-                  }
-                  className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-400 hover:text-white transition-colors cursor-pointer"
-                  title="Reset Percakapan"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+              <div>
+                <h2 className="font-semibold text-sm leading-tight">
+                  Tanya Produk {storeTitle}
+                </h2>
+                <p className="text-[11px] text-zinc-300">
+                  Panduan spesifikasi & katalog
+                </p>
               </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setMessages([initialMessage])}
+                aria-label="Ulangi percakapan"
+                className="min-w-[36px] min-h-[36px] flex items-center justify-center text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                aria-label="Tutup panel tanya produk"
+                className="min-w-[36px] min-h-[36px] flex items-center justify-center text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          {/* Quick Action Suggested Chips */}
-          <div className="px-3 py-2 bg-slate-50 border-b border-slate-200/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs shrink-0">
-            {activeSuggestions.map((suggestion, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSendMessage(suggestion.replace(/^[^\w\s]+/, "").trim())}
-                disabled={loading}
-                className="px-2.5 py-1 rounded-full bg-white border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700 font-medium whitespace-nowrap transition-all text-[11px] shadow-2xs active:scale-95 disabled:opacity-50"
-              >
-                {suggestion}
-              </button>
-            ))}
+          {/* Direct WhatsApp Shortcut Bar */}
+          <div className="bg-zinc-50 border-b border-zinc-200 px-4 py-2 flex items-center justify-between text-xs">
+            <span className="text-zinc-600 font-medium">Butuh respon admin langsung?</span>
+            <a
+              href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo ${storeTitle}, saya ingin bertanya tentang produk.`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-green-800 hover:text-green-900 font-semibold inline-flex items-center gap-1"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>Chat WhatsApp</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
 
-          {/* Message List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/60">
-            {messages.map((m) => (
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+            {messages.map((msg) => (
               <div
-                key={m.id}
-                className={`flex gap-2.5 ${m.sender === "user" ? "justify-end" : "justify-start"}`}
+                key={msg.id}
+                className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
               >
-                {m.sender === "assistant" && (
-                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                    <Bot className="w-4 h-4" />
-                  </div>
-                )}
+                <div
+                  className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed ${
+                    msg.sender === "user"
+                      ? "bg-zinc-900 text-white"
+                      : "bg-zinc-100 text-zinc-900 border border-zinc-200"
+                  }`}
+                >
+                  <div className="whitespace-pre-line">{msg.text}</div>
 
-                <div className={`max-w-[88%] space-y-2.5`}>
-                  <div
-                    className={`rounded-2xl px-4 py-2.5 ${
-                      m.sender === "user"
-                        ? "bg-blue-600 text-white rounded-br-xs shadow-sm"
-                        : "bg-white border border-slate-200/90 text-slate-800 rounded-bl-xs shadow-sm"
-                    }`}
-                  >
-                    {renderMessageContent(m.text)}
-
-                    {m.isTyping && (
-                      <span className="inline-block w-1.5 h-3.5 ml-1 bg-blue-500 animate-pulse align-middle" />
-                    )}
-
-                    <div
-                      className={`text-[9px] mt-1.5 flex items-center justify-between gap-2 ${
-                        m.sender === "user" ? "text-blue-200" : "text-slate-400"
-                      }`}
-                    >
-                      {m.sender === "assistant" && (
-                        <span className="text-[10px] text-indigo-500 font-medium flex items-center gap-1">
-                          {m.source === "gemini" ? (
-                            <>
-                              <Sparkles className="w-2.5 h-2.5 text-amber-500" />
-                              <span>Gemini 2.5</span>
-                            </>
-                          ) : (
-                            <>
-                              <Zap className="w-2.5 h-2.5 text-blue-500" />
-                              <span>Live Engine</span>
-                            </>
-                          )}
-                        </span>
-                      )}
-                      <span>
-                        {new Intl.DateTimeFormat("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }).format(new Date(m.timestamp))}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Rich Product Recommendation Cards attached to message */}
-                  {m.recommendedProducts && m.recommendedProducts.length > 0 && (
-                    <div className="space-y-2 pt-0.5">
-                      <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                        <ShoppingBag className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Rekomendasi Produk Terkait:</span>
-                      </div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {m.recommendedProducts.map((p) => {
-                          const isJustAdded = addedProductId === p.id;
-                          return (
-                            <div
-                              key={p.id}
-                              className="p-2.5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-3 hover:border-blue-300 transition-colors"
+                  {msg.recommendedProducts && msg.recommendedProducts.length > 0 && (
+                    <div className="mt-3 pt-2.5 border-t border-zinc-200 space-y-2">
+                      <p className="text-[11px] font-semibold text-zinc-700">
+                        Produk Terkait:
+                      </p>
+                      {msg.recommendedProducts.map((prod) => (
+                        <div
+                          key={prod.id}
+                          className="bg-white rounded-lg p-2 border border-zinc-200 flex items-center gap-2.5"
+                        >
+                          <img
+                            src={prod.imageUrl || "/placeholder.png"}
+                            alt={prod.name}
+                            className="w-10 h-10 rounded-md object-cover bg-zinc-100 shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={`/products/${prod.slug}`}
+                              onClick={() => setIsOpen(false)}
+                              className="text-xs font-semibold text-zinc-900 hover:text-green-800 block truncate"
                             >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                {p.imageUrl ? (
-                                  <img
-                                    src={p.imageUrl}
-                                    alt={p.name}
-                                    className="w-11 h-11 rounded-xl object-cover border border-slate-100 shrink-0"
-                                  />
-                                ) : (
-                                  <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                    <ShoppingBag className="w-5 h-5 text-slate-400" />
-                                  </div>
-                                )}
-                                <div className="min-w-0">
-                                  <Link
-                                    href={`/products/${p.slug}`}
-                                    onClick={() => setIsOpen(false)}
-                                    className="font-bold text-xs text-slate-900 hover:text-blue-600 truncate block leading-tight"
-                                  >
-                                    {p.name}
-                                  </Link>
-                                  <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="font-extrabold text-blue-600 text-xs">
-                                      {formatRupiah(p.discountPrice || p.price)}
-                                    </span>
-                                    {p.discountPrice && (
-                                      <span className="text-[10px] text-slate-400 line-through">
-                                        {formatRupiah(p.price)}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => handleAddToCartQuick(p)}
-                                  className={`p-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                                    isJustAdded
-                                      ? "bg-emerald-600 text-white"
-                                      : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                                  }`}
-                                  title="Tambahkan ke Keranjang"
-                                >
-                                  {isJustAdded ? (
-                                    <Check className="w-3.5 h-3.5" />
-                                  ) : (
-                                    <ShoppingBag className="w-3.5 h-3.5" />
-                                  )}
-                                </button>
-                                <Link
-                                  href={`/products/${p.slug}`}
-                                  onClick={() => setIsOpen(false)}
-                                  className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
-                                  title="Buka Halaman Detail"
-                                >
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </Link>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                              {prod.name}
+                            </Link>
+                            <span className="text-xs font-bold text-zinc-900 tabular-nums">
+                              {formatRupiah(prod.discountPrice || prod.price)}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickAddCart(prod)}
+                            disabled={prod.stock === 0}
+                            aria-label={`Tambah ${prod.name} ke keranjang`}
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                              addedProductId === prod.id
+                                ? "bg-green-800 text-white"
+                                : "bg-zinc-900 hover:bg-green-800 text-white"
+                            }`}
+                          >
+                            {addedProductId === prod.id ? (
+                              <Check className="w-3.5 h-3.5" />
+                            ) : (
+                              <ShoppingBag className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {m.sender === "user" && (
-                  <div className="w-7 h-7 rounded-lg bg-slate-800 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                    <User className="w-4 h-4" />
-                  </div>
-                )}
+                {msg.sender === "assistant" &&
+                  msg.actionSuggestions &&
+                  msg.actionSuggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {msg.actionSuggestions.map((sugg, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSendMessage(sugg)}
+                          className="text-xs px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-md text-zinc-700 hover:text-zinc-900 hover:border-zinc-400 transition-colors"
+                        >
+                          {sugg}
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
             ))}
 
             {loading && (
-              <div className="flex gap-2.5 items-center text-slate-400 text-xs py-1">
-                <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                  <Bot className="w-4 h-4 animate-spin" />
-                </div>
-                <div className="bg-white border border-slate-200 rounded-2xl px-3.5 py-2 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse delay-150"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse delay-300"></span>
-                  <span className="text-slate-600 text-xs font-medium ml-1">
-                    JNshop AI sedang mengetik...
-                  </span>
+              <div className="flex items-start">
+                <div className="bg-zinc-100 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-zinc-600">
+                  Mencari informasi produk...
                 </div>
               </div>
             )}
-
             <div ref={messagesEndRef} />
-          </div>
-
-          {/* WhatsApp Escalation Bar */}
-          <div className="bg-emerald-50 border-t border-emerald-100 px-3 py-2 flex items-center justify-between text-xs shrink-0">
-            <span className="text-emerald-800 font-medium flex items-center gap-1 text-[11px]">
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>Butuh bantuan manusia langsung?</span>
-            </span>
-            <a
-              href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(`Halo Admin ${storeTitle}, saya butuh bantuan terkait produk & pesanan saya.`)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10px] transition-colors"
-            >
-              <span>WhatsApp Admin (+{cleanWa})</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
           </div>
 
           {/* Input Form */}
@@ -558,19 +355,25 @@ export function AIChatAssistant({ storeSetting }: { storeSetting?: any }) {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0"
+            className="p-3 bg-white border-t border-zinc-200 flex items-center gap-2"
           >
+            <label htmlFor="product-assistant-input" className="sr-only">
+              Tulis pertanyaan produk
+            </label>
             <input
+              id="product-assistant-input"
               type="text"
-              placeholder="Tanya spek, switch, ukuran, promo, atau pesanan..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="flex-1 bg-slate-100 border border-slate-200 text-slate-900 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-slate-400"
+              placeholder="Tulis pertanyaan produk..."
+              disabled={loading}
+              className="flex-1 h-10 bg-zinc-50 border border-zinc-200 rounded-lg px-3 text-sm text-zinc-900 placeholder:text-zinc-600 focus:outline-none focus:bg-white focus:border-green-800"
             />
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white transition-colors cursor-pointer"
+              aria-label="Kirim pertanyaan"
+              className="w-10 h-10 bg-zinc-900 hover:bg-green-800 text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-40"
             >
               <Send className="w-4 h-4" />
             </button>

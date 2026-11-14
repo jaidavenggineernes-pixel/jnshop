@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendInAppNotification } from "@/lib/notifications";
+import { saveUploadedImage } from "@/lib/uploads";
 
 export async function POST(
   req: Request,
@@ -8,10 +9,35 @@ export async function POST(
 ) {
   try {
     const { orderNumber } = await params;
-    const { proofUrl, note } = await req.json();
+    const contentType = req.headers.get("content-type") || "";
+
+    let proofUrl = "";
+    let note: string | null = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const uploadedFile = formData.get("file");
+      const rawUrl = formData.get("proofUrl");
+      const rawNote = formData.get("note");
+      note = typeof rawNote === "string" && rawNote.trim() ? rawNote.trim() : null;
+
+      if (uploadedFile && uploadedFile instanceof File && uploadedFile.size > 0) {
+        const saved = await saveUploadedImage("proofs", orderNumber, uploadedFile);
+        proofUrl = saved.url;
+      } else if (typeof rawUrl === "string" && rawUrl.trim()) {
+        proofUrl = rawUrl.trim();
+      }
+    } else {
+      const body = await req.json();
+      proofUrl = typeof body.proofUrl === "string" ? body.proofUrl.trim() : "";
+      note = typeof body.note === "string" && body.note.trim() ? body.note.trim() : null;
+    }
 
     if (!proofUrl) {
-      return NextResponse.json({ error: "URL bukti transfer wajib diisi." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Pilih file gambar bukti transfer atau isi tautan gambar." },
+        { status: 400 }
+      );
     }
 
     const order = await prisma.order.findUnique({
@@ -29,12 +55,12 @@ export async function POST(
         where: { id: order.payments[0].id },
         data: {
           paymentProofUrl: proofUrl,
-          adminVerificationNote: note || null,
+          adminVerificationNote: note,
         },
       });
     }
 
-    // Set order status to WAITING_CONFIRMATION (Requires admin review!)
+    // Set order status to WAITING_CONFIRMATION
     const updated = await prisma.order.update({
       where: { id: order.id },
       data: {
@@ -56,6 +82,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
+      proofUrl,
       message: "Bukti transfer berhasil dikirim. Menunggu verifikasi admin.",
       order: updated,
     });

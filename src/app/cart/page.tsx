@@ -8,22 +8,31 @@ import {
   Plus,
   Minus,
   ArrowRight,
-  ShieldCheck,
   Tag,
-  ArrowLeft,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { formatRupiah } from "@/lib/utils";
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, clearCart, subtotal } = useCart();
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    subtotal,
+    appliedCoupon,
+    setAppliedCoupon,
+    clearCoupon,
+  } = useCart();
+
   const [voucherCode, setVoucherCode] = useState("");
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [voucherError, setVoucherError] = useState("");
   const [loadingVoucher, setLoadingVoucher] = useState(false);
 
-  const handleApplyCoupon = async (e: React.FormEvent) => {
+  const handleApplyVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!voucherCode.trim()) return;
 
@@ -39,278 +48,297 @@ export default function CartPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setVoucherError(data.error || "Voucher tidak valid");
-        setDiscountAmount(0);
-        setAppliedCoupon(null);
+        setVoucherError(data.error || "Kode voucher tidak valid.");
+        clearCoupon();
       } else {
-        setDiscountAmount(data.discountAmount);
-        setAppliedCoupon(data.coupon.code);
+        setAppliedCoupon({
+          code: data.coupon.code,
+          discountAmount: data.discountAmount,
+        });
         setVoucherCode("");
       }
     } catch {
-      setVoucherError("Gagal memeriksa voucher. Coba lagi.");
+      setVoucherError("Gagal memvalidasi kupon. Coba lagi.");
     } finally {
       setLoadingVoucher(false);
     }
   };
 
+  const discountAmount = appliedCoupon
+    ? Math.min(appliedCoupon.discountAmount, subtotal)
+    : 0;
   const finalTotal = Math.max(0, subtotal - discountAmount);
+  const totalUnits = items.reduce((acc, b) => acc + b.quantity, 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/" className="hover:text-blue-600 transition-colors">
-          Beranda
-        </Link>
-        <span>/</span>
-        <span className="text-slate-800 font-medium">Keranjang Belanja</span>
-      </div>
-
-      <div className="flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-28 sm:pb-12">
+      {/* Header */}
+      <div className="mb-8 pb-5 border-b border-zinc-200 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Keranjang Belanja
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-zinc-600 mb-2">
+            <Link href="/" className="hover:text-zinc-900">
+              Beranda
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-zinc-900 font-semibold">Keranjang Belanja</span>
+          </nav>
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight">
+            Keranjang Belanja ({totalUnits})
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Kelola item belanja Anda sebelum melanjutkan ke formulir pengiriman & pembayaran.
+          <p className="text-sm text-zinc-600 mt-1">
+            Periksa rincian produk fisik atau lisensi digital Anda sebelum melanjutkan ke pembayaran.
           </p>
         </div>
 
         {items.length > 0 && (
           <button
+            type="button"
             onClick={clearCart}
-            className="text-xs text-red-500 hover:text-red-700 font-semibold"
+            className="min-h-[40px] px-3 rounded-lg text-xs text-red-800 hover:bg-red-50 font-semibold inline-flex items-center gap-1.5 self-start sm:self-auto"
           >
-            Kosongkan Keranjang
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Kosongkan Keranjang</span>
           </button>
         )}
       </div>
 
       {items.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center space-y-4 max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
-            <ShoppingBag className="w-8 h-8" />
+        <div className="bg-white rounded-xl border border-zinc-200 p-12 text-center max-w-xl mx-auto space-y-5">
+          <div className="w-16 h-16 rounded-xl bg-zinc-100 text-zinc-700 border border-zinc-200 flex items-center justify-center mx-auto">
+            <ShoppingBag className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Keranjang Belanja Anda Kosong</h2>
-          <p className="text-sm text-slate-500">
-            Anda belum menambahkan produk apapun. Jelajahi katalog JNshop dan temukan produk terbaik untuk Anda.
-          </p>
+          <div className="space-y-1.5">
+            <h2 className="text-lg font-bold text-zinc-900">Keranjang Masih Kosong</h2>
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              Belum ada item di keranjang Anda. Jelajahi katalog workstation dan produk digital untuk mulai memilih.
+            </p>
+          </div>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-6 rounded-lg bg-zinc-900 hover:bg-green-800 text-white font-semibold text-sm transition-colors"
           >
-            <span>Mulai Belanja</span>
+            <span>Lihat Katalog Produk</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Cart Table Area */}
-          <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between font-bold text-slate-900 text-sm">
-              <span>Produk yang Dipilih ({items.reduce((a, b) => a + b.quantity, 0)})</span>
-              <span>Harga Satuan</span>
-            </div>
+          {/* Cart Items */}
+          <div className="lg:col-span-8 space-y-3">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white p-4 sm:p-5 rounded-xl border border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+              >
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-zinc-100 border border-zinc-200 shrink-0">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
-            <div className="divide-y divide-slate-100">
-              {items.map((item) => (
-                <div key={item.id} className="p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                  {/* Left Info */}
-                  <div className="flex gap-4 items-center">
-                    <div className="w-20 h-20 rounded-2xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <Link
-                        href={`/products/${item.slug}`}
-                        className="font-bold text-sm text-slate-900 hover:text-blue-600 line-clamp-1"
-                      >
-                        {item.name}
-                      </Link>
-                      {item.variantName && (
-                        <p className="text-xs text-slate-500 mt-0.5">Varian: {item.variantName}</p>
-                      )}
-                      <span className="inline-block text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700 mt-1">
-                        {item.isPhysical ? "Fisik" : "Digital"}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${
+                        item.isPhysical
+                          ? "bg-zinc-100 text-zinc-800 border-zinc-200"
+                          : "bg-green-50 text-green-800 border-green-200"
+                      }`}
+                    >
+                      {item.isPhysical ? "Fisik" : "Digital"}
+                    </span>
+                    {item.variantName && (
+                      <span className="text-xs text-zinc-600 font-medium">
+                        Varian: {item.variantName}
                       </span>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Quantity Stepper & Price */}
-                  <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:gap-8">
-                    <div className="flex items-center border border-slate-200 rounded-xl p-1 bg-slate-50">
+                  <Link
+                    href={`/products/${item.slug}`}
+                    className="text-sm sm:text-base font-bold text-zinc-900 hover:text-green-800 transition-colors block truncate"
+                  >
+                    {item.name}
+                  </Link>
+
+                  <div className="text-xs text-zinc-600 tabular-nums">
+                    Harga satuan: {formatRupiah(item.price)}
+                  </div>
+                </div>
+
+                <div className="w-full sm:w-auto flex items-center justify-between sm:flex-col sm:items-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
+                  <span className="text-base font-bold text-zinc-900 tabular-nums">
+                    {formatRupiah(item.price * item.quantity)}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center border border-zinc-300 bg-white rounded-lg overflow-hidden">
                       <button
+                        type="button"
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="p-1 rounded-lg text-slate-600 hover:bg-white"
+                        aria-label={`Kurangi jumlah ${item.name}`}
+                        className="w-9 h-9 flex items-center justify-center text-zinc-700 hover:bg-zinc-100"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="px-3 text-xs font-bold text-slate-900">{item.quantity}</span>
+                      <span className="px-3 text-xs font-bold text-zinc-900 tabular-nums">
+                        {item.quantity}
+                      </span>
                       <button
+                        type="button"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-1 rounded-lg text-slate-600 hover:bg-white"
                         disabled={item.quantity >= item.stock}
+                        aria-label={`Tambah jumlah ${item.name}`}
+                        className="w-9 h-9 flex items-center justify-center text-zinc-700 hover:bg-zinc-100 disabled:opacity-40"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    <div className="text-right">
-                      <div className="font-extrabold text-slate-900 text-sm">
-                        {formatRupiah(item.price * item.quantity)}
-                      </div>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-slate-400 hover:text-red-500 text-xs mt-1 inline-flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Hapus</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      aria-label={`Hapus ${item.name}`}
+                      className="w-9 h-9 flex items-center justify-center text-zinc-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Lanjut Belanja Produk Lain</span>
-              </Link>
-            </div>
+              </div>
+            ))}
           </div>
 
-          {/* Cart Summary & Checkout Actions */}
-          <div className="lg:col-span-4 space-y-6 sticky top-24">
-            {/* Voucher Coupon Card */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4">
-              <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
-                <Tag className="w-4 h-4 text-blue-600" />
-                <span>Punya Kode Diskon?</span>
+          {/* Summary Sidebar */}
+          <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-24">
+            {/* Voucher Form */}
+            <div className="bg-white p-5 rounded-xl border border-zinc-200 space-y-3">
+              <div className="flex items-center gap-2 font-bold text-sm text-zinc-900">
+                <Tag className="w-4 h-4 text-green-800" />
+                <h2>Kode Promo / Voucher</h2>
               </div>
 
               {appliedCoupon ? (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-emerald-800">Kupon: {appliedCoupon}</span>
-                    <p className="text-[11px] text-emerald-600">
-                      Hemat {formatRupiah(discountAmount)}
-                    </p>
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-green-900">
+                    <CheckCircle2 className="w-4 h-4 text-green-800 shrink-0" />
+                    <div>
+                      <span className="font-mono font-bold block">{appliedCoupon.code}</span>
+                      <span className="text-green-800 tabular-nums">
+                        Hemat {formatRupiah(discountAmount)}
+                      </span>
+                    </div>
                   </div>
                   <button
-                    onClick={() => {
-                      setAppliedCoupon(null);
-                      setDiscountAmount(0);
-                    }}
-                    className="text-xs text-red-600 font-semibold hover:underline"
+                    type="button"
+                    onClick={clearCoupon}
+                    className="text-xs font-semibold text-red-800 hover:underline px-2 py-1"
                   >
-                    Batal
+                    Hapus
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                <form onSubmit={handleApplyVoucher} className="flex gap-2">
+                  <label htmlFor="cart-coupon-input" className="sr-only">
+                    Masukkan kode voucher
+                  </label>
                   <input
+                    id="cart-coupon-input"
                     type="text"
                     placeholder="Contoh: JNSHOPNEW"
                     value={voucherCode}
                     onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 h-11 bg-zinc-50 border border-zinc-300 rounded-lg px-3 text-xs font-mono uppercase text-zinc-900 focus:outline-none focus:bg-white focus:border-green-800"
                   />
                   <button
                     type="submit"
-                    disabled={!voucherCode.trim() || loadingVoucher}
-                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold disabled:opacity-50 transition-colors"
+                    disabled={loadingVoucher || !voucherCode.trim()}
+                    className="min-h-[44px] px-4 bg-zinc-900 hover:bg-green-800 text-white font-semibold text-xs rounded-lg transition-colors disabled:opacity-50"
                   >
-                    Terapkan
+                    {loadingVoucher ? "Cek..." : "Pakai"}
                   </button>
                 </form>
               )}
 
-              {voucherError && <p className="text-xs text-red-500 font-medium">{voucherError}</p>}
+              {voucherError && (
+                <div className="flex items-center gap-1.5 text-xs text-red-800 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{voucherError}</span>
+                </div>
+              )}
             </div>
 
-            {/* Total Summary */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">
-                Ringkasan Transaksi
-              </h3>
+            {/* Order Totals */}
+            <div className="bg-white p-5 rounded-xl border border-zinc-200 space-y-4">
+              <h2 className="font-bold text-sm text-zinc-900 pb-3 border-b border-zinc-200">
+                Ringkasan Belanja
+              </h2>
 
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between text-slate-600">
-                  <span>Subtotal Produk</span>
-                  <span className="font-semibold text-slate-900">{formatRupiah(subtotal)}</span>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-zinc-600">
+                  <span>Subtotal ({totalUnits} unit)</span>
+                  <span className="font-semibold text-zinc-900 tabular-nums">
+                    {formatRupiah(subtotal)}
+                  </span>
                 </div>
 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-600 font-semibold">
-                    <span>Diskon Voucher ({appliedCoupon})</span>
-                    <span>-{formatRupiah(discountAmount)}</span>
+                  <div className="flex justify-between text-green-800 font-semibold">
+                    <span>Diskon ({appliedCoupon?.code})</span>
+                    <span className="tabular-nums">-{formatRupiah(discountAmount)}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-slate-600">
-                  <span>Biaya Pengiriman</span>
-                  <span className="text-slate-500">Dihitung di Checkout</span>
+                <div className="flex justify-between text-zinc-600">
+                  <span>Ongkos Kirim</span>
+                  <span className="text-xs font-medium text-zinc-700">
+                    {items.some((it) => it.isPhysical)
+                      ? "Dihitung saat checkout"
+                      : "Gratis (Digital)"}
+                  </span>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
-                <span className="font-serif font-bold text-sm text-stone-900">Total Pembayaran</span>
-                <span className="text-2xl font-serif font-bold text-stone-900">
+              <div className="pt-3 border-t border-zinc-200 flex justify-between items-baseline">
+                <span className="font-bold text-sm text-zinc-900">Estimasi Total</span>
+                <span className="text-xl font-bold text-zinc-900 tabular-nums">
                   {formatRupiah(finalTotal)}
                 </span>
               </div>
 
               <Link
-                href={`/checkout${appliedCoupon ? `?coupon=${appliedCoupon}` : ""}`}
-                className="w-full py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                href="/checkout"
+                className="w-full min-h-[48px] px-4 rounded-lg bg-zinc-900 hover:bg-green-800 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
               >
-                <span>Lanjut ke Formulir Checkout</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Lanjut ke Checkout</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-stone-700" />
-                <span>Transaksi dijamin aman dengan invoice resmi</span>
+              <div className="flex items-center justify-center gap-1.5 text-xs text-zinc-600">
+                <ShieldCheck className="w-4 h-4 text-green-800" />
+                <span>Voucher tersimpan otomatis ke halaman checkout</span>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Mobile Sticky Cart Total Bar */}
+      {/* Single Mobile Checkout Bar anchored above 64px MobileBottomNav */}
       {items.length > 0 && (
-        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-stone-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
+        <div className="fixed bottom-16 left-0 right-0 z-30 bg-white border-t border-zinc-200 px-4 py-2.5 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] sm:hidden flex items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] text-stone-500 font-medium uppercase">Total Pembayaran</div>
-            <div className="text-base font-serif font-bold text-stone-900">{formatRupiah(finalTotal)}</div>
+            <div className="text-[11px] text-zinc-600 font-medium">Estimasi Total</div>
+            <div className="text-base font-bold text-zinc-900 tabular-nums">
+              {formatRupiah(finalTotal)}
+            </div>
           </div>
           <Link
-            href={`/checkout${appliedCoupon ? `?coupon=${appliedCoupon}` : ""}`}
-            className="py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-stone-100 font-medium text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            href="/checkout"
+            className="min-h-[44px] px-5 bg-zinc-900 hover:bg-green-800 text-white font-semibold text-xs rounded-lg inline-flex items-center gap-1.5"
           >
             <span>Checkout</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      )}
-
-      {/* Mobile Sticky Cart Checkout Bar */}
-      {items.length > 0 && (
-        <div className="fixed bottom-12 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:hidden flex items-center justify-between gap-3">
-          <div>
-            <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Belanja</div>
-            <div className="text-base font-black text-blue-600">{formatRupiah(finalTotal)}</div>
-          </div>
-          <Link
-            href={`/checkout${appliedCoupon ? `?coupon=${appliedCoupon}` : ""}`}
-            className="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Checkout ({items.length})</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

@@ -21,15 +21,15 @@ async function buildCss() {
   const baseInputCss = `@import "tailwindcss";
 
 :root {
-  --background: #faf9f6;
-  --foreground: #1c1917;
+  --background: #ffffff;
+  --foreground: #18181b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Apple Garamond", "Baskerville", "Times New Roman", "Droid Serif", Times, Source Serif Pro, serif;
+  --font-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
@@ -40,6 +40,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+select:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid #166534;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Modern Web Guidance: Dialog & Top Layer UI */
 dialog:modal {
   overscroll-behavior: contain;
@@ -47,40 +73,24 @@ dialog:modal {
 dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background-color: rgba(28, 25, 23, 0.45);
-  backdrop-filter: blur(6px);
+  background-color: rgba(24, 24, 27, 0.45);
+  backdrop-filter: blur(4px);
 }
 
-/* Custom Clean Editorial Scrollbars */
+/* Studio Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: #d4d4d8;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
-}
-
-/* Subtle warm breathing animation for Concierge button */
-@keyframes warmBreathe {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 10px 25px -5px rgba(28, 25, 23, 0.18);
-  }
-  50% {
-    transform: scale(1.03);
-    box-shadow: 0 16px 32px -8px rgba(28, 25, 23, 0.28);
-  }
-}
-
-.ai-floating-btn {
-  animation: warmBreathe 4s infinite ease-in-out;
+  background: #a1a1aa;
 }
 `;
 

@@ -11,9 +11,9 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "JNshop — Toko Online Pribadi & Produk Digital Resmi",
+  title: "JNshop - Toko Workstation & Produk Digital Terkurasi",
   description:
-    "Platform e-commerce modern resmi JNshop. Menjual kebutuhan workstation, gadget, apparel, produk digital, dan jasa konsultasi profesional dengan AI Shopping Assistant.",
+    "Katalog independen JNshop untuk perlengkapan workstation, aksesori meja kerja, perangkat lunak resmi, dan produk digital siap pakai.",
 };
 
 export default async function RootLayout({
@@ -42,10 +42,10 @@ export default async function RootLayout({
 
   return (
     <html lang="id" className="h-full antialiased scroll-smooth">
-      <body className="min-h-full flex flex-col bg-[#faf9f6] text-stone-900 font-sans selection:bg-stone-900 selection:text-amber-100">
+      <body className="min-h-full flex flex-col bg-white text-zinc-900 font-sans selection:bg-green-800 selection:text-white">
         <Providers>
           <Navbar categories={categories} storeSetting={storeSetting} />
-          <main className="flex-1 pb-16 sm:pb-0">{children}</main>
+          <main className="flex-1 pb-20 sm:pb-0">{children}</main>
           <Footer storeSetting={storeSetting} />
           <CartDrawer />
           <AIChatAssistant storeSetting={storeSetting} />
