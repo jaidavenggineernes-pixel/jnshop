@@ -3,8 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CartItemData } from "@/types";
 
-interface AppliedCouponState {
+export interface AppliedCouponState {
+  id?: string;
   code: string;
+  description?: string | null;
+  type?: "PERCENTAGE" | "FIXED";
+  value?: number;
+  minPurchase?: number;
+  maxDiscount?: number | null;
   discountAmount: number;
 }
 
@@ -84,6 +90,42 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, appliedCoupon, isLoaded]);
 
+  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  // Keep applied coupon strictly valid against current cart subtotal
+  useEffect(() => {
+    if (!isLoaded || !appliedCoupon) return;
+
+    // Invalidate coupon if cart is empty or subtotal drops below minimum purchase
+    if (
+      subtotal <= 0 ||
+      (typeof appliedCoupon.minPurchase === "number" &&
+        appliedCoupon.minPurchase > 0 &&
+        subtotal < appliedCoupon.minPurchase)
+    ) {
+      setAppliedCoupon(null);
+      return;
+    }
+
+    // Dynamically recalculate discount based on actual current subtotal
+    let recomputedDiscount = appliedCoupon.discountAmount;
+    if (appliedCoupon.type === "PERCENTAGE" && typeof appliedCoupon.value === "number") {
+      recomputedDiscount = (subtotal * appliedCoupon.value) / 100;
+      if (typeof appliedCoupon.maxDiscount === "number" && appliedCoupon.maxDiscount > 0) {
+        recomputedDiscount = Math.min(recomputedDiscount, appliedCoupon.maxDiscount);
+      }
+    } else if (appliedCoupon.type === "FIXED" && typeof appliedCoupon.value === "number") {
+      recomputedDiscount = Math.min(appliedCoupon.value, subtotal);
+    } else {
+      recomputedDiscount = Math.min(appliedCoupon.discountAmount, subtotal);
+    }
+
+    if (Math.abs(recomputedDiscount - appliedCoupon.discountAmount) > 0.01) {
+      setAppliedCoupon((prev) => (prev ? { ...prev, discountAmount: recomputedDiscount } : null));
+    }
+  }, [subtotal, appliedCoupon, isLoaded]);
+
   const addItem = (product: any, variant?: any, quantity = 1) => {
     setItems((prev) => {
       const cartItemId = variant ? `${product.id}-${variant.id}` : product.id;
@@ -144,9 +186,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCoupon = () => {
     setAppliedCoupon(null);
   };
-
-  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <CartContext.Provider

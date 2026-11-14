@@ -74,10 +74,32 @@ function CheckoutForm() {
 
   const hasPhysicalItems = items.some((item) => item.isPhysical);
   const shippingFee = hasPhysicalItems ? (courier.includes("Express") ? 32000 : 18000) : 0;
-  const discountAmount = contextCoupon
-    ? Math.min(contextCoupon.discountAmount, subtotal)
+  const isCouponEligible =
+    Boolean(contextCoupon) &&
+    subtotal > 0 &&
+    (typeof contextCoupon?.minPurchase !== "number" || subtotal >= contextCoupon.minPurchase);
+  const discountAmount = isCouponEligible
+    ? Math.min(contextCoupon!.discountAmount, subtotal)
     : 0;
-  const appliedCouponCode = contextCoupon?.code || null;
+  const appliedCouponCode = isCouponEligible ? contextCoupon?.code || null : null;
+
+  useEffect(() => {
+    if (
+      contextCoupon &&
+      typeof contextCoupon.minPurchase === "number" &&
+      contextCoupon.minPurchase > 0 &&
+      subtotal < contextCoupon.minPurchase
+    ) {
+      const cCode = contextCoupon.code;
+      const cMin = contextCoupon.minPurchase;
+      clearCoupon();
+      setVoucherError(
+        `Voucher "${cCode}" dilepas otomatis karena total belanja (${formatRupiah(
+          subtotal
+        )}) belum mencapai syarat minimal belanja (${formatRupiah(cMin)}).`
+      );
+    }
+  }, [subtotal, contextCoupon, clearCoupon]);
 
   useEffect(() => {
     async function loadPaymentMethods() {
@@ -142,10 +164,17 @@ function CheckoutForm() {
         clearCoupon();
       } else {
         setContextCoupon({
+          id: data.coupon.id,
           code: data.coupon.code,
-          discountAmount: data.discountAmount,
+          description: data.coupon.description,
+          type: data.coupon.type,
+          value: data.coupon.value,
+          minPurchase: Number(data.coupon.minPurchase) || 0,
+          maxDiscount: data.coupon.maxDiscount ? Number(data.coupon.maxDiscount) : null,
+          discountAmount: Number(data.discountAmount) || 0,
         });
         setCouponCode("");
+        setVoucherError("");
       }
     } catch {
       setVoucherError("Gagal memeriksa kupon.");

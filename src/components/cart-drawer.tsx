@@ -30,7 +30,11 @@ export function CartDrawer() {
   if (!isCartOpen) return null;
 
   const totalUnits = items.reduce((a, b) => a + b.quantity, 0);
-  const discount = appliedCoupon ? Math.min(appliedCoupon.discountAmount, subtotal) : 0;
+  const isCouponEligible =
+    Boolean(appliedCoupon) &&
+    subtotal > 0 &&
+    (typeof appliedCoupon?.minPurchase !== "number" || subtotal >= appliedCoupon.minPurchase);
+  const discount = isCouponEligible ? Math.min(appliedCoupon!.discountAmount, subtotal) : 0;
   const netSubtotal = Math.max(0, subtotal - discount);
 
   return (

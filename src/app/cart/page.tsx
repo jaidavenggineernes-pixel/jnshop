@@ -52,10 +52,17 @@ export default function CartPage() {
         clearCoupon();
       } else {
         setAppliedCoupon({
+          id: data.coupon.id,
           code: data.coupon.code,
-          discountAmount: data.discountAmount,
+          description: data.coupon.description,
+          type: data.coupon.type,
+          value: data.coupon.value,
+          minPurchase: Number(data.coupon.minPurchase) || 0,
+          maxDiscount: data.coupon.maxDiscount ? Number(data.coupon.maxDiscount) : null,
+          discountAmount: Number(data.discountAmount) || 0,
         });
         setVoucherCode("");
+        setVoucherError("");
       }
     } catch {
       setVoucherError("Gagal memvalidasi kupon. Coba lagi.");
@@ -64,8 +71,13 @@ export default function CartPage() {
     }
   };
 
-  const discountAmount = appliedCoupon
-    ? Math.min(appliedCoupon.discountAmount, subtotal)
+  const isCouponEligible =
+    Boolean(appliedCoupon) &&
+    subtotal > 0 &&
+    (typeof appliedCoupon?.minPurchase !== "number" || subtotal >= appliedCoupon.minPurchase);
+
+  const discountAmount = isCouponEligible
+    ? Math.min(appliedCoupon!.discountAmount, subtotal)
     : 0;
   const finalTotal = Math.max(0, subtotal - discountAmount);
   const totalUnits = items.reduce((acc, b) => acc + b.quantity, 0);

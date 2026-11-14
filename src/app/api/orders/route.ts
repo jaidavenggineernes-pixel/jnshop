@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
-import { generateOrderNumber } from "@/lib/utils";
+import { generateOrderNumber, formatRupiah } from "@/lib/utils";
 import { notifyNewOrder } from "@/lib/notifications";
 
 export async function POST(req: Request) {
@@ -90,37 +90,65 @@ export async function POST(req: Request) {
     // 2. Validate Coupon Discount (if applied)
     let discountAmount = 0;
     if (couponCode) {
+      const cleanCouponCode = String(couponCode).toUpperCase().trim();
       const coupon = await prisma.coupon.findUnique({
-        where: { code: couponCode.toUpperCase().trim() },
+        where: { code: cleanCouponCode },
       });
 
-      const now = new Date();
-      const isDateValid =
-        (!coupon?.startDate || new Date(coupon.startDate) <= now) &&
-        (!coupon?.endDate || new Date(coupon.endDate) >= now);
-
-      if (
-        coupon &&
-        coupon.isActive &&
-        isDateValid &&
-        coupon.quota > coupon.usedCount &&
-        totalAmount >= coupon.minPurchase
-      ) {
-        if (coupon.type === "PERCENTAGE") {
-          discountAmount = (totalAmount * coupon.value) / 100;
-          if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
-            discountAmount = coupon.maxDiscount;
-          }
-        } else {
-          discountAmount = Math.min(coupon.value, totalAmount);
-        }
-
-        // Increment coupon used count
-        await prisma.coupon.update({
-          where: { id: coupon.id },
-          data: { usedCount: { increment: 1 } },
-        });
+      if (!coupon || !coupon.isActive) {
+        return NextResponse.json(
+          { error: `Kode voucher "${cleanCouponCode}" tidak valid atau telah dinonaktifkan.` },
+          { status: 400 }
+        );
       }
+
+      const now = new Date();
+      if (coupon.startDate && new Date(coupon.startDate) > now) {
+        return NextResponse.json(
+          { error: `Voucher "${cleanCouponCode}" belum mulai berlaku.` },
+          { status: 400 }
+        );
+      }
+
+      if (coupon.endDate && new Date(coupon.endDate) < now) {
+        return NextResponse.json(
+          { error: `Masa berlaku voucher "${cleanCouponCode}" telah berakhir.` },
+          { status: 400 }
+        );
+      }
+
+      if (coupon.quota <= coupon.usedCount) {
+        return NextResponse.json(
+          { error: `Kuota penggunaan voucher "${cleanCouponCode}" sudah habis.` },
+          { status: 400 }
+        );
+      }
+
+      if (totalAmount < coupon.minPurchase) {
+        return NextResponse.json(
+          {
+            error: `Minimal belanja untuk menggunakan voucher "${cleanCouponCode}" adalah ${formatRupiah(
+              coupon.minPurchase
+            )}. Total belanja Anda saat ini ${formatRupiah(totalAmount)}.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (coupon.type === "PERCENTAGE") {
+        discountAmount = (totalAmount * coupon.value) / 100;
+        if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
+          discountAmount = coupon.maxDiscount;
+        }
+      } else {
+        discountAmount = Math.min(coupon.value, totalAmount);
+      }
+
+      // Increment coupon used count
+      await prisma.coupon.update({
+        where: { id: coupon.id },
+        data: { usedCount: { increment: 1 } },
+      });
     }
 
     // 3. Calculate shipping fee
