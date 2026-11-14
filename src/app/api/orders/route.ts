@@ -94,7 +94,18 @@ export async function POST(req: Request) {
         where: { code: couponCode.toUpperCase().trim() },
       });
 
-      if (coupon && coupon.isActive && coupon.quota > coupon.usedCount && totalAmount >= coupon.minPurchase) {
+      const now = new Date();
+      const isDateValid =
+        (!coupon?.startDate || new Date(coupon.startDate) <= now) &&
+        (!coupon?.endDate || new Date(coupon.endDate) >= now);
+
+      if (
+        coupon &&
+        coupon.isActive &&
+        isDateValid &&
+        coupon.quota > coupon.usedCount &&
+        totalAmount >= coupon.minPurchase
+      ) {
         if (coupon.type === "PERCENTAGE") {
           discountAmount = (totalAmount * coupon.value) / 100;
           if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
